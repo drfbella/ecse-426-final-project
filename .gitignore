@@ -45,3 +45,13 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+
+# Keil-Generated Directories
+**/DebugConfig/
+**/Objects/
+**/RTE/
+
+# Keil-Generated Files
+*.uvguix*
+*.uvoptx
+*.lst
