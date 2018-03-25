@@ -1181,11 +1181,11 @@ typedef struct
 	 /** @defgroup Sensitivity
   * @{
   */
- #define LIS3DSH_SENSITIVITY_2G    	0.061
- #define LIS3DSH_SENSITIVITY_4G		  0.122
- #define LIS3DSH_SENSITIVITY_6G			0.183
- #define LIS3DSH_SENSITIVITY_8G		  0.244
- #define LIS3DSH_SENSITIVITY_16G    0.488
+ #define LIS3DSH_SENSITIVITY_2G    	0.061f
+ #define LIS3DSH_SENSITIVITY_4G		  0.122f
+ #define LIS3DSH_SENSITIVITY_6G			0.183f
+ #define LIS3DSH_SENSITIVITY_8G		  0.244f
+ #define LIS3DSH_SENSITIVITY_16G    0.488f
   /**
   * @}
   */
