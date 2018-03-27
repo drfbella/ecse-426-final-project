@@ -22,8 +22,8 @@ public class FirebaseService {
 
     public void uploadBytes(byte[] bytes, String path)
     {
-        storageRef.child(path).putBytes(bytes).addOnSuccessListener(
-                new OnSuccessListener<UploadTask.TaskSnapshot>() {
+        storageRef.child(path).putBytes(bytes)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
@@ -35,6 +35,6 @@ public class FirebaseService {
                     public void onFailure(@NonNull Exception e) {
                         Log.d(TAG, "Upload failed");
                     }
-        });
+                });
     }
 }
