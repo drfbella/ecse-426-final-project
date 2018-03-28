@@ -9,3 +9,4 @@
 .externalNativeBuild
 .idea/
 app/src/main/res/raw/*.json
+app/src/main/res/raw/*.txt
