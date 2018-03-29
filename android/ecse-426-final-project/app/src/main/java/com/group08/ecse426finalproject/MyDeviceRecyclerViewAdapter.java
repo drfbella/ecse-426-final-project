@@ -7,21 +7,21 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.group08.ecse426finalproject.ScanFragment.OnListFragmentInteractionListener;
-import com.group08.ecse426finalproject.dummy.DummyContent.DummyItem;
+import com.group08.ecse426finalproject.LeDevice.BLEDevice;
 
 import java.util.List;
 
 /**
- * {@link RecyclerView.Adapter} that can display a {@link DummyItem} and makes a call to the
+ * {@link RecyclerView.Adapter} that can display a {@link BLEDevice} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type. SCANFILTER?
  */
 public class MyDeviceRecyclerViewAdapter extends RecyclerView.Adapter<MyDeviceRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<BLEDevice> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyDeviceRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public MyDeviceRecyclerViewAdapter(List<BLEDevice> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -52,9 +52,8 @@ public class MyDeviceRecyclerViewAdapter extends RecyclerView.Adapter<MyDeviceRe
     }
 
     // Add a new device to list
-    //TODO: change dummy item
     public void addDevice(String address, String name){
-        mValues.add(new DummyItem(name, address, null));
+        mValues.add(new BLEDevice(name, address, null));
     }
 
     @Override
@@ -66,7 +65,7 @@ public class MyDeviceRecyclerViewAdapter extends RecyclerView.Adapter<MyDeviceRe
         public final View mView;
         public final TextView mIdView;
         public final TextView mContentView;
-        public DummyItem mItem;
+        public BLEDevice mItem;
 
         public ViewHolder(View view) {
             super(view);

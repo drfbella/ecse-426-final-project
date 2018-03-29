@@ -1,18 +1,14 @@
 package com.group08.ecse426finalproject;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothManager;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
 
 @TargetApi(18) //18 needed for BT manager
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ScanFragment.OnListFragmentInteractionListener{
 
 
     private final static int REQUEST_ENABLE_BT = 1;
@@ -38,4 +34,9 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
     }
+
+    public void onListFragmentInteraction(LeDevice.BLEDevice item){
+
+    }
+
 }

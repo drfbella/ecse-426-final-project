@@ -12,9 +12,9 @@ import android.bluetooth.le.ScanResult;
 import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -25,11 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.group08.ecse426finalproject.dummy.DummyContent;
-import com.group08.ecse426finalproject.dummy.DummyContent.DummyItem;
+import com.group08.ecse426finalproject.LeDevice.BLEDevice;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -47,14 +45,18 @@ public class ScanFragment extends Fragment {
     private BluetoothAdapter.LeScanCallback mLeScanCallback;
 
     BluetoothLeScanner mLeScanner;
-    // Initializes Manager to get bluetooth adapter
 
-    final BluetoothManager bluetoothManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
-    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothAdapter mBluetoothAdapter; // bluetooth adapter
+    private Handler mHandler;
+    private boolean mScanning;
+
 
     // RecyclerView
     RecyclerView mRecyclerView;
     MyDeviceRecyclerViewAdapter mRecyclerViewAdapter;
+
+    // Stops scanning after 10 seconds
+    private static final long SCAN_PERIOD = 10000;
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -86,28 +88,29 @@ public class ScanFragment extends Fragment {
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
-
+            // Api 21+
         if (Build.VERSION.SDK_INT >= 21) {
             mScanCallback = new ScanCallback() {
                 @Override
-                public void onScanResult(int callbackType, ScanResult
-                        result) {
+                public void onScanResult(int callbackType, ScanResult result) {
                     super.onScanResult(callbackType, result);
                     Log.d("addDevice", "add!");
                     mRecyclerViewAdapter.addDevice(result.getDevice().getAddress(), result.getDevice().getName());
                 }
             };
         } else {
+            // Api 18-20
             mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
                 @Override
-                public void onLeScan(BluetoothDevice bluetoothDevice, int
-                        i, byte[] bytes) {
-                    mRecyclerViewAdapter.addDevice(bluetoothDevice.getAddress(),
-                            bluetoothDevice.getName());
+                public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bytes) {
+                    mRecyclerViewAdapter.addDevice(bluetoothDevice.getAddress(), bluetoothDevice.getName());
                 }
             };
         }
+
+        // initialize bluetooth adapter
         mBluetoothAdapter = getBluetoothAdapter();
+        // check if user has enabled bluetooth
         enableBluetoothAdapter(mBluetoothAdapter);
     }
 
@@ -122,7 +125,7 @@ public class ScanFragment extends Fragment {
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             mRecyclerView = (RecyclerView) view;
-            mRecyclerViewAdapter = new MyDeviceRecyclerViewAdapter(DummyContent.ITEMS, mListener);
+            mRecyclerViewAdapter = new MyDeviceRecyclerViewAdapter(LeDevice.ITEMS, mListener);
             if (mColumnCount <= 1) {
                 mRecyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
@@ -163,13 +166,15 @@ public class ScanFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(BLEDevice item);
     }
+
 
     //helper methods
 
     // Initializes bluetooth adapter
     public BluetoothAdapter getBluetoothAdapter(){
+        final BluetoothManager bluetoothManager = (BluetoothManager) getActivity().getSystemService(Context.BLUETOOTH_SERVICE);
         if (bluetoothManager.getAdapter() == null) {
             return null;
         } else
@@ -181,13 +186,24 @@ public class ScanFragment extends Fragment {
      * @param mBluetoothAdapter
      */
     public void enableBluetoothAdapter(BluetoothAdapter mBluetoothAdapter){
-        if(!mBluetoothAdapter.isEnabled()){
+        if(mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()){
             if (!mBluetoothAdapter.isEnabled()) {
-                Intent enableIntent = new
-                        Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        startScan();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopScan();
     }
 
     // startActivity results
@@ -210,9 +226,12 @@ public class ScanFragment extends Fragment {
         Log.d("startScan", "scan!");
         if (mRecyclerViewAdapter.getItemCount() == 0)
 //            mListener.onShowProgress();        TODO: what is this for?
+
+            //api 18-20
         if (Build.VERSION.SDK_INT < 21) {
             mBluetoothAdapter.startLeScan(mLeScanCallback);
         } else {
+            //api 21
             // request BluetoothLeScanner if it hasn't been initialized yet
             if (mLeScanner == null) mLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
             // start scan in low latency mode
@@ -221,5 +240,38 @@ public class ScanFragment extends Fragment {
         }
     }
 
+    private void stopScan(){
+        // 18-20
+        if(Build.VERSION.SDK_INT < 21) {
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+        }
+        // 21+
+        else {
+            mLeScanner.stopScan(mScanCallback);
+        }
+    }
+
+
+
+    // method for scanning followed android developer guide
+
+    private void scanLeDevice(final boolean enable) {
+        if (enable) {
+            // Stops scanning after a pre-defined scan period.
+            mHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mScanning = false;
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                }
+            }, SCAN_PERIOD);
+
+            mScanning = true;
+            mBluetoothAdapter.startLeScan(mLeScanCallback);
+        } else {
+            mScanning = false;
+            mBluetoothAdapter.stopLeScan(mLeScanCallback);
+        }
+    }
 
 }
