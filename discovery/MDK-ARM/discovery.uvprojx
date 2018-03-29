@@ -410,6 +410,16 @@
               <FileType>1</FileType>
               <FilePath>..\Src\fput_debug.c</FilePath>
             </File>
+            <File>
+              <FileName>uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>accelerometer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\accelerometer.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

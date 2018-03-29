@@ -37,6 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 extern uint8_t MyFlag;
+extern TIM_HandleTypeDef timer_uart;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -70,6 +71,13 @@ void SysTick_Handler(void)
 
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief  This function handles TIM3 Handler.
+  */
 
+void TIM3_IRQHandler(void)
+{
+	HAL_TIM_IRQHandler(&timer_uart);	
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

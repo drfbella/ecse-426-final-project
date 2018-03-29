@@ -71,7 +71,7 @@ int main(void)
 
 	// and example of sending a data through UART, but you need to configure the UART block:
 	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
-
+	//UART_Initialize();
 
   while (1)
   {
