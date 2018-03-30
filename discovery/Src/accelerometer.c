@@ -1,6 +1,12 @@
 #include "lis3dsh.h"
 #include "math.h"
+#include "stdlib.h"
+#include "main.h"
+#include "accelerometer.h"
 
+#define PI 3.14159265358979323846
+float calcPitch(float x, float y, float z);
+float calcRoll(float x, float y, float z);
 
 void accelerometer_init(void) {
 
@@ -34,9 +40,11 @@ void accelerometer_init(void) {
 }
 
 float caclPitch(float x, float y, float z){
-float pitch = atan2(y,(sqrt(x*x + z*z)));
+float pitch = atan2(y,(sqrt(x*x + z*z)))* 180 / PI;
+	return pitch;
 }
 
 float caclRoll(float x, float y, float z){
-float roll = atan2(-x,z);
+float roll = atan2(-x,z) * 180 / PI;
+	return roll;
 }

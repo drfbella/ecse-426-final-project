@@ -39,6 +39,7 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "lis3dsh.h"
+#include "accelerometer.h"
 
 
 /* Private variables ---------------------------------------------------------*/
@@ -57,8 +58,7 @@ LIS3DSH_InitTypeDef 		Acc_instance;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
-void initializeACC			(void);
-
+void accelerometer_init			(void);
 
 int main(void)
 {
@@ -67,7 +67,7 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
-	initializeACC	();	// Like any other peripheral, you need to initialize it. Refer to the its driver to learn more.
+	accelerometer_init	();	// Like any other peripheral, you need to initialize it. Refer to the its driver to learn more.
 
 	// and example of sending a data through UART, but you need to configure the UART block:
 	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
@@ -90,7 +90,9 @@ int main(void)
 					accX = (float)Buffer[0];
 					accY = (float)Buffer[1];
 					accZ = (float)Buffer[2];
-					printf("X: %4f     Y: %4f     Z: %4f \n", accX, accY, accZ);
+					calcPitch (accX, accY, accZ);
+					calcRoll (accX, accY, accZ);
+					printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
 				}
 			}
 			
@@ -316,26 +318,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 
-
-void initializeACC(void){
-	
-	Acc_instance.Axes_Enable				= LIS3DSH_XYZ_ENABLE;
-	Acc_instance.AA_Filter_BW				= LIS3DSH_AA_BW_50;
-	Acc_instance.Full_Scale					= LIS3DSH_FULLSCALE_2;
-	Acc_instance.Power_Mode_Output_DataRate		= LIS3DSH_DATARATE_100;
-	Acc_instance.Self_Test					= LIS3DSH_SELFTEST_NORMAL;
-	Acc_instance.Continous_Update   = LIS3DSH_ContinousUpdate_Disabled;
-	
-	LIS3DSH_Init(&Acc_instance);	
-	
-	/* Enabling interrupt conflicts with push button
-  ACC_Interrupt_Config.Dataready_Interrupt	= LIS3DSH_DATA_READY_INTERRUPT_ENABLED;
-	ACC_Interrupt_Config.Interrupt_signal			= LIS3DSH_ACTIVE_HIGH_INTERRUPT_SIGNAL;
-	ACC_Interrupt_Config.Interrupt_type				= LIS3DSH_INTERRUPT_REQUEST_PULSED;
-	
-	LIS3DSH_DataReadyInterruptConfig(&ACC_Interrupt_Config);
-	*/
-}
 
 /* USER CODE END 4 */
 

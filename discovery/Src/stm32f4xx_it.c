@@ -75,9 +75,9 @@ void SysTick_Handler(void)
   * @brief  This function handles TIM3 Handler.
   */
 
-void TIM3_IRQHandler(void)
+/*void TIM3_IRQHandler(void)
 {
 	HAL_TIM_IRQHandler(&timer_uart);	
-}
+}*/
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
