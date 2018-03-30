@@ -90,8 +90,8 @@ int main(void)
 					accX = (float)Buffer[0];
 					accY = (float)Buffer[1];
 					accZ = (float)Buffer[2];
-					calcPitch (accX, accY, accZ);
-					calcRoll (accX, accY, accZ);
+					calcPitch(accX, accY, accZ);
+					calcRoll(accX, accY, accZ);
 					printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
 				}
 			}
