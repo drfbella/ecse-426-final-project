@@ -23,9 +23,11 @@ class SpeechService {
     private static final String SPEECH_URL =
             "https://speech.googleapis.com/v1/speech:recognize?key=";
     private Context context;
+    private final BluetoothTransmitter bluetoothTransmitter;
 
-    SpeechService(Context context) {
+    SpeechService(Context context, BluetoothTransmitter bluetoothTransmitter) {
         this.context = context;
+        this.bluetoothTransmitter = bluetoothTransmitter;
     }
 
     void sendDemoRequestString() {
@@ -56,6 +58,15 @@ class SpeechService {
             @Override
             public void onResponse(JSONObject response) {
                 Log.d(TAG, "Response: " + response);
+                try {
+                    String transcript = response.getJSONArray("results")
+                            .getJSONObject(0).getJSONArray("alternatives")
+                            .getJSONObject(0).getString("transcript");
+                    Log.d(TAG, "Transcript: " + transcript);
+                    bluetoothTransmitter.transmitString(transcript);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }, new Response.ErrorListener() {
             @Override
