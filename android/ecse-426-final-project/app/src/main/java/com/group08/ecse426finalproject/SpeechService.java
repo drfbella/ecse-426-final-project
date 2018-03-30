@@ -28,12 +28,16 @@ class SpeechService {
         this.context = context;
     }
 
-    void sendDemoRequest() {
+    void sendDemoRequestString() {
         sendRequest(readRawResourceString(R.raw.audio_64));
     }
 
+    void sendDemoRequestBytes() {
+        sendRequest(readRawResourceBytes(R.raw.audio));
+    }
+
     void sendRequest(byte[] audio_bytes) {
-        String audio_base64 = Base64.encodeToString(audio_bytes, Base64.DEFAULT);
+        String audio_base64 = Base64.encodeToString(audio_bytes, Base64.NO_WRAP);
         sendRequest(audio_base64);
     }
 
@@ -63,12 +67,16 @@ class SpeechService {
     }
 
     private String readRawResourceString(int id) {
+        return new String(readRawResourceBytes(id));
+    }
+
+    private byte[] readRawResourceBytes(int id) {
         try {
             InputStream in_s = context.getResources().openRawResource(id);
 
             byte[] b = new byte[in_s.available()];
             in_s.read(b);
-            return new String(b);
+            return b;
         } catch (IOException e) {
             Log.d(TAG, "Unable to read raw text resource.");
         }
