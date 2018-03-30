@@ -2,6 +2,7 @@ package com.group08.ecse426finalproject;
 
 
 import android.content.Context;
+import android.util.Base64;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -27,12 +28,21 @@ class SpeechService {
         this.context = context;
     }
 
-    void sendRequest() {
+    void sendDemoRequest() {
+        sendRequest(readRawResourceString(R.raw.audio_64));
+    }
+
+    void sendRequest(byte[] audio_bytes) {
+        String audio_base64 = Base64.encodeToString(audio_bytes, Base64.DEFAULT);
+        sendRequest(audio_base64);
+    }
+
+    void sendRequest(String audio_base64) {
         RequestQueue queue = Volley.newRequestQueue(context);
         JSONObject jsonRequest = new JSONObject();
         try {
             jsonRequest = new JSONObject(readRawResourceString(R.raw.sync_request));
-            jsonRequest.getJSONObject("audio").put("content", readRawResourceString(R.raw.audio_64));
+            jsonRequest.getJSONObject("audio").put("content", audio_base64);
         } catch (JSONException e) {
             e.printStackTrace();
         }
