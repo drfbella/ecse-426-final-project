@@ -16,7 +16,7 @@ import android.util.Log;
 
 import java.util.ArrayList;
 
-@TargetApi(21) // which one?
+@TargetApi(21)
 
 public class Scanner_BTLE {
 

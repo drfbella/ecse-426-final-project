@@ -6,4 +6,5 @@
     <string name="scan_again">Scan again.</string>
     <string name="scanning">Scanning</string>
     <string name="no_name">Device has no name.</string>
+    <string name="CLIENT_CHARACTERISTIC_CONFIG">To be determined...</string>
 </resources>
