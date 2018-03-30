@@ -2,4 +2,8 @@
     <string name="app_name">ECSE426FinalProject</string>
     <string name="ble_not_supported">Bluetooth not supported for this device.</string>
     <string name="ble_disable">BLE is disabled.</string>
+    <string name="turn_on_bt">Please turn on bluetooth</string>
+    <string name="scan_again">Scan again.</string>
+    <string name="scanning">Scanning</string>
+    <string name="no_name">Device has no name.</string>
 </resources>
