@@ -13,6 +13,6 @@ public class MainActivity extends AppCompatActivity {
         new FirebaseService().uploadBytes(
                 resourceAccess.readRawResourceBytes(R.raw.audio),
                 "audio/demo.raw");
-        //new SpeechService(this, new BluetoothTransmitter(), resourceAccess).sendDemoRequestBytes();
+        new SpeechService(this, new BluetoothTransmitter(), resourceAccess).sendDemoRequestBytes();
     }
 }
