@@ -1,12 +1,10 @@
+#include "accelerometer.h"
 #include "lis3dsh.h"
 #include "math.h"
 #include "stdlib.h"
 #include "main.h"
-#include "accelerometer.h"
 
 #define PI 3.14159265358979323846
-float calcPitch(float x, float y, float z);
-float calcRoll(float x, float y, float z);
 
 uint8_t status;
 float Buffer[3];
@@ -99,7 +97,7 @@ void readAccelerometer(){
 			}
 	}
 
-	int detectTap(void){
+int detectTap(void){
 	
 	/*Accelerometer data changes most notably in the y axis upon tap
 		This could be optimized but say we detext a tap if there's a change of 25mm/s^2 */
@@ -151,3 +149,4 @@ void readAccelerometer(){
 			return tap2;
 	
 	}
+
