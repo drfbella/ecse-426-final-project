@@ -15,27 +15,26 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 class SpeechService {
     private static final String TAG = "SpeechService";
     private static final String SPEECH_URL =
             "https://speech.googleapis.com/v1/speech:recognize?key=";
     private Context context;
     private final BluetoothTransmitter bluetoothTransmitter;
+    private final ResourceAccess resourceAccess;
 
-    SpeechService(Context context, BluetoothTransmitter bluetoothTransmitter) {
+    SpeechService(Context context, BluetoothTransmitter bluetoothTransmitter, ResourceAccess resourceAccess) {
         this.context = context;
         this.bluetoothTransmitter = bluetoothTransmitter;
+        this.resourceAccess = resourceAccess;
     }
 
     void sendDemoRequestString() {
-        sendRequest(readRawResourceString(R.raw.audio_64));
+        sendRequest(resourceAccess.readRawResourceString(R.raw.audio_64));
     }
 
     void sendDemoRequestBytes() {
-        sendRequest(readRawResourceBytes(R.raw.audio));
+        sendRequest(resourceAccess.readRawResourceBytes(R.raw.audio));
     }
 
     void sendRequest(byte[] audio_bytes) {
@@ -47,12 +46,12 @@ class SpeechService {
         RequestQueue queue = Volley.newRequestQueue(context);
         JSONObject jsonRequest = new JSONObject();
         try {
-            jsonRequest = new JSONObject(readRawResourceString(R.raw.sync_request));
+            jsonRequest = new JSONObject(resourceAccess.readRawResourceString(R.raw.sync_request));
             jsonRequest.getJSONObject("audio").put("content", audio_base64);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        String api_key = readRawResourceString(R.raw.gcloud_api_key);
+        String api_key = resourceAccess.readRawResourceString(R.raw.gcloud_api_key);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
                 SPEECH_URL + api_key, jsonRequest, new Response.Listener<JSONObject>() {
             @Override
@@ -75,22 +74,5 @@ class SpeechService {
             }
         });
         queue.add(jsonObjectRequest);
-    }
-
-    private String readRawResourceString(int id) {
-        return new String(readRawResourceBytes(id));
-    }
-
-    private byte[] readRawResourceBytes(int id) {
-        try {
-            InputStream in_s = context.getResources().openRawResource(id);
-
-            byte[] b = new byte[in_s.available()];
-            in_s.read(b);
-            return b;
-        } catch (IOException e) {
-            Log.d(TAG, "Unable to read raw text resource.");
-        }
-        return null;
     }
 }

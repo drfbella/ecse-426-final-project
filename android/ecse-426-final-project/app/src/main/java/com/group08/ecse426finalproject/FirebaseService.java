@@ -11,16 +11,16 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-public class FirebaseService {
+class FirebaseService {
     private static final String TAG = "FirebaseService";
     private StorageReference storageRef;
 
-    public FirebaseService()
+    FirebaseService()
     {
         storageRef = FirebaseStorage.getInstance().getReference();
     }
 
-    public void uploadBytes(byte[] bytes, String path)
+    void uploadBytes(byte[] bytes, String path)
     {
         storageRef.child(path).putBytes(bytes)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
