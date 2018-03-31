@@ -47,10 +47,7 @@
 LIS3DSH_InitTypeDef 		Acc_instance;
 
 /* Private variables ---------------------------------------------------------*/
-	uint8_t status;
-	float Buffer[3];
-	float accX, accY, accZ;
-	uint8_t MyFlag = 0;
+
 	
 	
 
@@ -59,6 +56,19 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
 void accelerometer_init			(void);
+void readAccelerometer(void);
+int detectTap(void);
+int detect2Tap(void);
+
+int State = 0;
+int counter = 0;
+float accXWindow[10] = {0.0};
+float accYWindow[10] = {0.0};
+float accZWindow[10] = {0.0};
+int windowSize = 10;
+extern int tap;
+extern int tap2;
+
 
 int main(void)
 {
@@ -67,7 +77,7 @@ int main(void)
   HAL_Init();
   SystemClock_Config();
   MX_GPIO_Init();
-	accelerometer_init	();	// Like any other peripheral, you need to initialize it. Refer to the its driver to learn more.
+	accelerometer_init();	
 
 	// and example of sending a data through UART, but you need to configure the UART block:
 	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
@@ -75,32 +85,56 @@ int main(void)
 
   while (1)
   {
- 
-		if (MyFlag/200)
-		{
-
-			MyFlag = 0;
-			//Reading the accelerometer status register
-				LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
-				//The first four bits denote if we have new data on all XYZ axes, 
-		   	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
-				if ((status & 0x0F) != 0x00)
-				{
-					LIS3DSH_ReadACC(&Buffer[0]);
-					accX = (float)Buffer[0];
-					accY = (float)Buffer[1];
-					accZ = (float)Buffer[2];
-					calcPitch (accX, accY, accZ);
-					calcRoll (accX, accY, accZ);
-					printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
+		switch (State){
+		
+		case 0:
+			//State 0: read acc and detect tap	
+		readAccelerometer();
+		if (counter > 200){
+		detectTap();
+			if (tap == 1){
+			readAccelerometer();
+			//Need a way to slow it down to read the second tap. Maybe another if statement with another counter?
+				detect2Tap();
+				if (tap2==1){
+				State = 1;
 				}
+				else {
+				State = 2;}
 			}
-			
+			else {
+			State = 0;
+			}
+		}
+		
+		break;
+		
+		case 1:
+			// state 1, 1 tap detected, led0 on, record audio
+		break;
+		
+		case 2:
+			//state 2, led1 on data transfer
+		break;
+		
+		case 3:
+			// wait till integer N arrives from nucleo board
+		break;
+		
+		case 4:
+			// 2 taps detected sampling f 100Hz read for 10s
+		  // read acc & record pitch and roll
+		break;
+		
+		case 5:
+			// Blink LED2 N times
+		break;		
+		}	
   }
 
-	
-
 }
+
+
 
 /** System Clock Configuration
 */

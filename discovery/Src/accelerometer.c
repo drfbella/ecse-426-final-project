@@ -8,6 +8,20 @@
 float calcPitch(float x, float y, float z);
 float calcRoll(float x, float y, float z);
 
+uint8_t status;
+float Buffer[3];
+float accX, accY, accZ;
+uint8_t MyFlag = 0;
+float accValue[3] = {0,0,0};
+extern int counter;
+extern float accXWindow[];
+extern float accYWindow[];
+extern float accZWindow[];
+extern int windowSize;
+int tap = 0;
+int tap2 = 0;
+	
+
 void accelerometer_init(void) {
 
 	/* initialise accelerometer */
@@ -39,12 +53,101 @@ void accelerometer_init(void) {
 
 }
 
-float caclPitch(float x, float y, float z){
+float calcPitch(float x, float y, float z){
 float pitch = atan2(y,(sqrt(x*x + z*z)))* 180 / PI;
 	return pitch;
 }
 
-float caclRoll(float x, float y, float z){
+float calcRoll(float x, float y, float z){
 float roll = atan2(-x,z) * 180 / PI;
 	return roll;
 }
+
+void readAccelerometer(){
+
+ 
+		if (MyFlag/10) //which means it's true every 0.2s
+		{
+			counter = counter + 1; //This counter is gonna count to about 200 until I care about the value of the accelerometer, to allow it to stabilize
+			MyFlag = 0;
+			//Reading the accelerometer status register
+				LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
+				//The first four bits denote if we have new data on all XYZ axes, 
+		   	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
+				if ((status & 0x0F) != 0x00)
+				{
+					LIS3DSH_ReadACC(&Buffer[0]);
+					accX = (float)Buffer[0];
+					accY = (float)Buffer[1];
+					accZ = (float)Buffer[2];
+					calcPitch (accX, accY, accZ);
+					calcRoll (accX, accY, accZ);
+					printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
+				
+					//This block is implementing a sliding window and storing fetched values
+				 for (int j = 0; j < windowSize -1; j++){
+				 
+						accXWindow[j] = accXWindow [j+1];
+						accYWindow[j] = accYWindow [j+1];
+						accZWindow[j] = accZWindow [j+1];
+				 }
+				 
+						accXWindow[windowSize-1] = accX;
+						accYWindow[windowSize-1] = accY;
+						accZWindow[windowSize-1] = accZ;
+				}
+			}
+	}
+
+	int detectTap(void){
+	
+	/*Accelerometer data changes most notably in the y axis upon tap
+		This could be optimized but say we detext a tap if there's a change of 25mm/s^2 */
+	
+		float largeY = -50000.0;
+		float smallY = 50000.0;
+		
+		for (int j = 0; j < windowSize; j++){
+			
+			//This way, I'm always storing the current value of acc
+			if (accYWindow[j] > largeY){
+			largeY = accYWindow[j];
+			}
+			
+			if (accYWindow[j] < smallY){
+			smallY = accYWindow[j];
+			}
+		}
+			if ((fabs(largeY) - fabs(smallY) > 25)){
+			
+			tap = 1;
+			
+		}
+			return tap;
+	
+	}
+	
+	int detect2Tap(void){
+		
+		float largeY = -50000.0;
+		float smallY = 50000.0;
+		
+		for (int j = 0; j < windowSize; j++){
+			
+			//This way, I'm always storing the current value of acc
+			if (accYWindow[j] > largeY){
+			largeY = accYWindow[j];
+			}
+			
+			if (accYWindow[j] < smallY){
+			smallY = accYWindow[j];
+			}
+		}
+			if ((fabs(largeY) - fabs(smallY) > 25)){
+			
+			tap2 = 1;
+			
+		}
+			return tap2;
+	
+	}
