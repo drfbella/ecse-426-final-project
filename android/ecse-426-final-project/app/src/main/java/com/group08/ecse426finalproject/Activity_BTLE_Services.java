@@ -18,6 +18,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 @TargetApi(18)
 public class Activity_BTLE_Services extends AppCompatActivity implements ExpandableListView.OnChildClickListener {
@@ -86,6 +87,8 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_btle_services);
 
+        Log.d(TAG, "onCreate");
+
         // retrieve name and address of device
         Intent intent = getIntent();
         name = intent.getStringExtra(Activity_BTLE_Services.EXTRA_NAME);
@@ -97,11 +100,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         characteristics_HashMap = new HashMap<>();
         characteristics_HashMapList = new HashMap<>();
 
-        //listview
+        // list view for services
         expandableListAdapter = new ListAdapter_BTLE_Services(
                 this, services_ArrayList, characteristics_HashMapList);
 
-        expandableListView = (ExpandableListView) findViewById(R.id.lv_expandable);
+        expandableListView = findViewById(R.id.lv_expandable);
         expandableListView.setAdapter(expandableListAdapter);
         expandableListView.setOnChildClickListener(this);
 
@@ -152,6 +155,9 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                 services_ArrayList.get(groupPosition).getUuid().toString())
                 .get(childPosition);
 
+        // TODO: implement fire base connection here, for read and write
+
+        // write-able property
         if (Utils.hasWriteProperty(characteristic.getProperties()) != 0) {
             String uuid = characteristic.getUuid().toString();
 
@@ -209,4 +215,46 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     public void updateCharacteristic() {
         expandableListAdapter.notifyDataSetChanged();
     }
+
+
+    /**
+     *  Used to obtain a specific characteristic based on String input...
+     * @param uuid  of the specific characteristic to be read/written
+     * @return BluetoothGattCharacteristic used to read or manipulate
+     */
+    public BluetoothGattCharacteristic getCharacteristic(UUID uuid) {
+        List<BluetoothGattService> servicesList = mBTLE_Service.getSupportedGattServices();
+        for(BluetoothGattService service : servicesList) {
+            List<BluetoothGattCharacteristic> characteristicsList = service.getCharacteristics();
+            for(BluetoothGattCharacteristic c : characteristicsList){
+                if(c.getUuid() == uuid){
+                    return c;
+                }
+            }
+        }
+        Log.d(TAG, "No UUID found for " + uuid.toString());
+        return null;
+    }
+
+    public byte[] readAudio(){
+        UUID audioUuid = null; // TODO: configure audio characteristic UUID
+        BluetoothGattCharacteristic audioCharacteristic = getCharacteristic(audioUuid);
+        if(audioCharacteristic == null) {
+            Log.d(TAG, "Unable to read audio.");
+            return null;
+        }
+        return audioCharacteristic.getValue();
+    }
+
+    public byte[] readAccelerometer() {
+        UUID accelerometerUuid = null; // TODO: configure audio characteristic UUID
+        BluetoothGattCharacteristic accelerometerCharacteristic = getCharacteristic(accelerometerUuid);
+        if(accelerometerCharacteristic == null) {
+            Log.d(TAG, "Unable to read accelerometer value.");
+            return null;
+        }
+        return accelerometerCharacteristic.getValue();
+    }
+
+
 }

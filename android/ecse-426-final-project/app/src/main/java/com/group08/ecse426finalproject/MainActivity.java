@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Debug;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent = new Intent(this, Activity_BTLE_Services.class);
         intent.putExtra(Activity_BTLE_Services.EXTRA_NAME, name);
         intent.putExtra(Activity_BTLE_Services.EXTRA_ADDRESS, address);
+        Log.d(TAG, "clicked on a device");
         startActivityForResult(intent, BTLE_SERVICES);
     }
 

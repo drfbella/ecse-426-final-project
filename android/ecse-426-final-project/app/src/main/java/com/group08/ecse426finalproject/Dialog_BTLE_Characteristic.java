@@ -23,7 +23,6 @@ public class Dialog_BTLE_Characteristic extends DialogFragment implements Dialog
         builder.setView(inflater.inflate(R.layout.dialog_btle_characteristic, null))
                 .setNegativeButton("Cancel", this).setPositiveButton("Send", this);
         builder.setTitle(title);
-
         return builder.create();
     }
 
@@ -41,6 +40,7 @@ public class Dialog_BTLE_Characteristic extends DialogFragment implements Dialog
                 break;
             case -1:
                 // okay button pressed
+                // write characteristics
                 if (service != null) {
                     characteristic.setValue(edit.getText().toString());
                     service.writeCharacteristic(characteristic);
