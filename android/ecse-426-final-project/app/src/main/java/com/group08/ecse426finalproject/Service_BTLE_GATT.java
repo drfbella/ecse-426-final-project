@@ -38,12 +38,12 @@ public class Service_BTLE_GATT extends Service {
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
-    public final static String ACTION_GATT_CONNECTED = "android.kaviles.bletutorial.Service_BTLE_GATT.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED = "android.kaviles.bletutorial.Service_BTLE_GATT.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED = "android.kaviles.bletutorial.Service_BTLE_GATT.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE = "android.kaviles.bletutorial.Service_BTLE_GATT.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_UUID = "android.kaviles.bletutorial.Service_BTLE_GATT.EXTRA_UUID";
-    public final static String EXTRA_DATA = "android.kaviles.bletutorial.Service_BTLE_GATT.EXTRA_DATA";
+    public final static String ACTION_GATT_CONNECTED = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_UUID = "com.group08.ecse426finalproject.Service_BTLE_GATT.EXTRA_UUID";
+    public final static String EXTRA_DATA = "com.group08.ecse426finalproject.Service_BTLE_GATT.EXTRA_DATA";
 
 
     // Implements callback methods for GATT events that the app cares about.  For example,
@@ -56,11 +56,11 @@ public class Service_BTLE_GATT extends Service {
                 intentAction = ACTION_GATT_CONNECTED;
 
                 mConnectionState = STATE_CONNECTED;
-
                 broadcastUpdate(intentAction);
 
                 Log.i(TAG, "Connected to GATT server.");
                 // Attempts to discover services after successful connection.
+                // Discover services
                 Log.i(TAG, "Attempting to start service discovery:" + mBluetoothGatt.discoverServices());
             }
             else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -74,6 +74,12 @@ public class Service_BTLE_GATT extends Service {
             }
         }
 
+        /**
+         *  called when a service is discovered
+         * @param gatt
+         * @param status
+         */
+
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
 
@@ -85,6 +91,14 @@ public class Service_BTLE_GATT extends Service {
             }
         }
 
+        /**
+         * Called when characteristic is read
+         * Retrieve characteristic data
+         * @param gatt
+         * @param characteristic
+         * @param status
+         */
+
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt,
                                          BluetoothGattCharacteristic characteristic,
@@ -95,6 +109,11 @@ public class Service_BTLE_GATT extends Service {
             }
         }
 
+        /**
+         *  Called on characteristic changed, update data
+         * @param gatt
+         * @param characteristic
+         */
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
@@ -121,7 +140,7 @@ public class Service_BTLE_GATT extends Service {
         intent.putExtra(EXTRA_UUID, characteristic.getUuid().toString());
 
         // For all other profiles, writes the data formatted in HEX.
-        final byte[] data = characteristic.getValue();
+        final byte[] data = characteristic.getValue(); // data in HEX
 
         if (data != null && data.length > 0) {
 
@@ -226,7 +245,7 @@ public class Service_BTLE_GATT extends Service {
 
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        mBluetoothGatt = device.connectGatt(this, false, mGattCallback); // mGattCallback
         Log.d(TAG, "Trying to create a new connection.");
         mBluetoothDeviceAddress = address;
         mConnectionState = STATE_CONNECTING;

@@ -20,6 +20,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity_BTLE_Services" />
+
+        <service
+            android:name=".Service_BTLE_GATT"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

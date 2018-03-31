@@ -23,12 +23,15 @@ import java.util.List;
 public class Activity_BTLE_Services extends AppCompatActivity implements ExpandableListView.OnChildClickListener {
     private final static String TAG = Activity_BTLE_Services.class.getSimpleName();
 
-    public static final String EXTRA_NAME = "android.aviles.bletutorial.Activity_BTLE_Services.NAME";
-    public static final String EXTRA_ADDRESS = "android.aviles.bletutorial.Activity_BTLE_Services.ADDRESS";
+    public static final String EXTRA_NAME = "com.group08.ecse426finalproject.Activity_BTLE_Services.NAME";
+    public static final String EXTRA_ADDRESS = "com.group08.ecse426finalproject.Activity_BTLE_Services.ADDRESS";
 
+
+    // listView for services
     private ListAdapter_BTLE_Services expandableListAdapter;
     private ExpandableListView expandableListView;
 
+    // mapping all available services
     private ArrayList<BluetoothGattService> services_ArrayList;
     private HashMap<String, BluetoothGattCharacteristic> characteristics_HashMap;
     private HashMap<String, ArrayList<BluetoothGattCharacteristic>> characteristics_HashMapList;
@@ -41,6 +44,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     private String name;
     private String address;
 
+    // service connection
     private ServiceConnection mBTLE_ServiceConnection = new ServiceConnection() {
 
         @Override
@@ -58,7 +62,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 
             mBTLE_Service.connect(address);
 
-            // Automatically connects to the device upon successful start-up initialization.
+            // Automatically connects to the device upon successful start-up initialization. //TODO: review
 //            mBTLeService.connect(mBTLeDeviceAddress);
 
 //            mBluetoothGatt = mBTLeService.getmBluetoothGatt();
@@ -82,14 +86,18 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_btle_services);
 
+        // retrieve name and address of device
         Intent intent = getIntent();
         name = intent.getStringExtra(Activity_BTLE_Services.EXTRA_NAME);
         address = intent.getStringExtra(Activity_BTLE_Services.EXTRA_ADDRESS);
 
+        // map services and characteristics
+        // characteristics will be displayed
         services_ArrayList = new ArrayList<>();
         characteristics_HashMap = new HashMap<>();
         characteristics_HashMapList = new HashMap<>();
 
+        //listview
         expandableListAdapter = new ListAdapter_BTLE_Services(
                 this, services_ArrayList, characteristics_HashMapList);
 
@@ -105,9 +113,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     protected void onStart() {
         super.onStart();
 
+        // event handler
         mGattUpdateReceiver = new BroadcastReceiver_BTLE_GATT(this);
         registerReceiver(mGattUpdateReceiver, Utils.makeGattUpdateIntentFilter());
 
+        // BTLE_GATT service
         mBTLE_Service_Intent = new Intent(this, Service_BTLE_GATT.class);
         bindService(mBTLE_Service_Intent, mBTLE_ServiceConnection, Context.BIND_AUTO_CREATE);
         startService(mBTLE_Service_Intent);
@@ -132,6 +142,9 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         mBTLE_Service_Intent = null;
     }
 
+    /*
+        Sets up activity for chosen characteristics //TODO: review
+     */
     @Override
     public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
 

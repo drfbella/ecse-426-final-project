@@ -32,14 +32,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     //permission constants
     public final static int REQUEST_ENABLE_BT = 1;
+    public final static int BTLE_SERVICES = 2;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 456;
 
     private HashMap<String, BTLE_Device> mBTDevicesHashMap;
     private ArrayList<BTLE_Device> mBTLEDeviceArrayList;
     private ListAdapter_BTLE_Devices adapter;
 
-    private long scanPeriod = 7500; // in ms
-    private int signalStrength = -75; // may need to modify
+    private long scanPeriod = 7500; // scanning period in ms
+    private int signalStrength = -75; // signal strength, may need to modify
+                                      // if signal strength is low and not recognizable
 
     BluetoothAdapter mBluetoothAdapter;
 
@@ -53,10 +55,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // use this to check BLE support and location access for SDK version >= 23
         checkBTCompatibility();
         requestLocation();
 
-
+        // create ble device mapping
         mBTStateUpdateReceiver = new BroadcastReceiver_BTState(getApplicationContext());
         mBTLeScanner = new Scanner_BTLE(this, scanPeriod, signalStrength);
         mBTDevicesHashMap = new HashMap<>();
@@ -69,11 +72,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ListView listView = new ListView(this);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(this);
+
+        scanButton = findViewById(R.id.scanButton);
         ((ScrollView)findViewById(R.id.scrollView)).addView(listView);
-
-        scanButton = (Button) findViewById(R.id.scanButton);
         scanButton.setOnClickListener(this);
-
     }
 
     @Override
@@ -123,6 +125,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Utils.toast(getApplicationContext(), "Please turn on bluetooth.");
             }
         }
+        else if (requestCode == BTLE_SERVICES){
+
+        }
     }
 
     //checks if BLE is supported in the current device
@@ -141,8 +146,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Used in future BLE tutorials
-        Utils.toast(getApplicationContext(), "you clicked on" + mBTLEDeviceArrayList.get(position).getAddress());
-        connectDevice(mBTLEDeviceArrayList.get(position).getAddress());
+        Utils.toast(getApplicationContext(), "you clicked on" + mBTLEDeviceArrayList.get(position).getName());
+
+        stopScan();
+
+        /**
+         * prepare bundle for new BTLE services Activity
+         */
+        String name = mBTLEDeviceArrayList.get(position).getName();
+        String address = mBTLEDeviceArrayList.get(position).getAddress();
+
+        Intent intent = new Intent(this, Activity_BTLE_Services.class);
+        intent.putExtra(Activity_BTLE_Services.EXTRA_NAME, name);
+        intent.putExtra(Activity_BTLE_Services.EXTRA_ADDRESS, address);
+        startActivityForResult(intent, BTLE_SERVICES);
     }
 
     /**
@@ -202,8 +219,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mBTLeScanner.stop();
     }
 
-    // must request location if SDK >= 23
-    // source: https://github.com/googlesamples/android-BluetoothLeGatt/issues/38
+    /**
+     *     must request location if SDK >= 23
+     *     Inspired from stackoverflow
+     *     Availability: https://github.com/googlesamples/android-BluetoothLeGatt/issues/38
+     *     date accessed: 03-30-2018
+     */
+
+
     public void requestLocation() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
@@ -223,51 +246,51 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private BluetoothGatt mGatt;
-
-    /**
-     * Inspiration from PART 2 of BLE Tutorial McGill PDF slides
-     */
-
-
-    /**
-     * Connection established, pass address to get device Gatt
-     * @param address of the selected device in the list
-     */
-
-    private void connectDevice(String address){
-        mBluetoothAdapter = mBTLeScanner.getBluetoothAdapter(); //obtain adapter from BTLeScanner
-
-        if(!mBluetoothAdapter.isEnabled()){
-            Utils.toast(getApplicationContext(), "Bluetooth is disabled...");
-            finish();
-        }
-        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-        mGatt = device.connectGatt(getApplicationContext(), false, mCallback);
-        Log.d("BLE", "connectDevice");
-        Utils.toast(getApplicationContext(), "Selected device is " + mGatt.getDevice().getAddress());
-    }
-    private BluetoothGattCallback mCallback = new BluetoothGattCallback() {
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            super.onConnectionStateChange(gatt, status, newState);
-            switch(newState){
-                case BluetoothGatt.STATE_CONNECTED:
-                    //when connected, check services
-                    mGatt.discoverServices(); // Checks the services or characteristics on the device
-                    Log.d(TAG, "onConnectionStateChange");
-                    break;
-            }
-        }
-
-        /**
-         * called when services are discovered when connecting to a device
-         * @param gatt
-         * @param status
-         */
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status){
-            super.onServicesDiscovered(gatt, status);
-        }
-    };
+//    private BluetoothGatt mGatt;
+//
+//    /**
+//     * Inspiration from PART 2 of BLE Tutorial McGill PDF slides
+//     */
+//
+//
+//    /**
+//     * Connection established, pass address to get device Gatt
+//     * @param address of the selected device in the list
+//     */
+//
+//    private void connectDevice(String address){
+//        mBluetoothAdapter = mBTLeScanner.getBluetoothAdapter(); //obtain adapter from BTLeScanner
+//
+//        if(!mBluetoothAdapter.isEnabled()){
+//            Utils.toast(getApplicationContext(), "Bluetooth is disabled...");
+//            finish();
+//        }
+//        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+//        mGatt = device.connectGatt(getApplicationContext(), false, mCallback);
+//        Log.d("BLE", "connectDevice");
+//        Utils.toast(getApplicationContext(), "Selected device is " + mGatt.getDevice().getAddress());
+//    }
+//    private BluetoothGattCallback mCallback = new BluetoothGattCallback() {
+//        @Override
+//        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+//            super.onConnectionStateChange(gatt, status, newState);
+//            switch(newState){
+//                case BluetoothGatt.STATE_CONNECTED:
+//                    //when connected, check services
+//                    mGatt.discoverServices(); // Checks the services or characteristics on the device
+//                    Log.d(TAG, "onConnectionStateChange");
+//                    break;
+//            }
+//        }
+//
+//        /**
+//         * called when services are discovered when connecting to a device
+//         * @param gatt
+//         * @param status
+//         */
+//        @Override
+//        public void onServicesDiscovered(BluetoothGatt gatt, int status){
+//            super.onServicesDiscovered(gatt, status);
+//        }
+//    };
 }
