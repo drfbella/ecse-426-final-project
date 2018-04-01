@@ -8,3 +8,6 @@
 /captures
 .externalNativeBuild
 .idea/
+app/src/main/res/raw/*credential*
+app/src/main/res/raw/*token*
+app/src/main/res/raw/*key*

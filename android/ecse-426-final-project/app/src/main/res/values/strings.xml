@@ -7,4 +7,7 @@
     <string name="scanning">Scanning</string>
     <string name="no_name">Device has no name.</string>
     <string name="CLIENT_CHARACTERISTIC_CONFIG">To be determined...</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="speech">Speech</string>
+    <string name="accelerometer">Accelerometer</string>
 </resources>
