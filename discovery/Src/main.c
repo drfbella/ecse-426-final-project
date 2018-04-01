@@ -44,7 +44,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 
-LIS3DSH_InitTypeDef 		Acc_instance;
+LIS3DSH_InitTypeDef Acc_instance;
 ADC_HandleTypeDef hadc1;
 TIM_HandleTypeDef htim2;
 
@@ -59,7 +59,7 @@ static void MX_GPIO_Init(void);
 void MX_ADC1_Init(void);
 void MX_TIM2_Init(void);
 
-void accelerometer_init			(void);
+void accelerometer_init(void);
 void readAccelerometer(void);
 int detectTap(void);
 int detect2Tap(void);
@@ -78,15 +78,14 @@ extern int tap2;
 int main(void)
 {
 
-
-  HAL_Init();
-  SystemClock_Config();
-  MX_GPIO_Init();
-	accelerometer_init();	
-	MX_ADC1_Init();
-  MX_TIM2_Init();
-	HAL_TIM_Base_Start(&htim2);
-	HAL_ADC_Start_IT(&hadc1);
+HAL_Init();
+SystemClock_Config();
+MX_GPIO_Init();
+accelerometer_init();	
+MX_ADC1_Init();
+MX_TIM2_Init();
+HAL_TIM_Base_Start(&htim2);
+HAL_ADC_Start_IT(&hadc1);
 	
 
 	// and example of sending a data through UART, but you need to configure the UART block:
@@ -127,9 +126,9 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
 		//Trigger Electret Microphone Breakout, might be as simple as connecting the adc pin with the microphone
 		HAL_ADC_Start(&hadc1); 	
-		
+		//will put in bytes later
 		int i = -1;
-		int audioBuffer[100000]= {0};
+		int audioBuffer[10000] = {0};
 		while(HAL_ADC_PollForConversion(&hadc1, 10000) == HAL_OK){
 			i++;
 			audioBuffer[i] = HAL_ADC_GetValue(&hadc1);
@@ -140,6 +139,7 @@ int main(void)
 		
 		case 2:
 			//state 2, led red on data transfer
+		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
 		break;
 		
 		case 3:
@@ -251,7 +251,7 @@ static void MX_ADC1_Init(void)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_8B;
+  hadc1.Init.Resolution = ADC_RESOLUTION_8B; //tbd if 8 is enough
   hadc1.Init.ScanConvMode = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
@@ -286,9 +286,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 840-1;
+  htim2.Init.Prescaler = 10;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10-1;
+  htim2.Init.Period = 10;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
