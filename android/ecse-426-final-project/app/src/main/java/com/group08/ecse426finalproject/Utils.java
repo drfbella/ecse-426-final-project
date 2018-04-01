@@ -1,6 +1,5 @@
 package com.group08.ecse426finalproject;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -33,7 +32,7 @@ public class Utils {
     // request to turn on bt by prompting user to change in settings
     public static void requestUserBluetooth(Activity activity) {
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        activity.startActivityForResult(enableBtIntent, MainActivity.REQUEST_ENABLE_BT);
+        activity.startActivityForResult(enableBtIntent, BluetoothActivity.REQUEST_ENABLE_BT);
     }
 
     public static IntentFilter makeGattUpdateIntentFilter() {

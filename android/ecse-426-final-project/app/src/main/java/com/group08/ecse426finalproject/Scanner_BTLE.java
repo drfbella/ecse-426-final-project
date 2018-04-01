@@ -6,21 +6,14 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanFilter;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
-import android.util.Log;
-
-import java.util.ArrayList;
 
 @TargetApi(21)
 
 public class Scanner_BTLE {
 
-    private MainActivity mMainActivity;
+    private BluetoothActivity mBluetoothActivity;
 
     private BluetoothAdapter mBluetoothAdapter;
     private boolean mScanning;
@@ -34,8 +27,8 @@ public class Scanner_BTLE {
     private long scanPeriod;
     private int signalStrength;
 
-    public Scanner_BTLE(MainActivity mainActivity, long scanPeriod, int signalStrength) {
-        mMainActivity = mainActivity;
+    public Scanner_BTLE(BluetoothActivity bluetoothActivity, long scanPeriod, int signalStrength) {
+        mBluetoothActivity = bluetoothActivity;
 
         mHandler = new Handler();
 
@@ -45,7 +38,7 @@ public class Scanner_BTLE {
         // fetches bluetooth adapter with the bluetooth manager
 
         final BluetoothManager bluetoothManager =
-                (BluetoothManager) mainActivity.getSystemService(Context.BLUETOOTH_SERVICE);
+                (BluetoothManager) bluetoothActivity.getSystemService(Context.BLUETOOTH_SERVICE);
 
         mBluetoothAdapter = bluetoothManager.getAdapter();
     }
@@ -55,8 +48,8 @@ public class Scanner_BTLE {
     }
     public void start(){
         if (!Utils.checkBluetooth(mBluetoothAdapter)) {
-            Utils.requestUserBluetooth(mMainActivity);
-            mMainActivity.stopScan();
+            Utils.requestUserBluetooth(mBluetoothActivity);
+            mBluetoothActivity.stopScan();
         }
         else {
             scanLeDevice(true);
@@ -70,17 +63,17 @@ public class Scanner_BTLE {
     private void scanLeDevice(final boolean enable){
 
         if(enable && !mScanning) {
-            Utils.toast(mMainActivity.getApplicationContext(), "Started BLE scanning...");
+            Utils.toast(mBluetoothActivity.getApplicationContext(), "Started BLE scanning...");
 
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Utils.toast(mMainActivity.getApplicationContext(), "Stopping BLE Scanning...");
+                    Utils.toast(mBluetoothActivity.getApplicationContext(), "Stopping BLE Scanning...");
 
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
 
-                    mMainActivity.stopScan();
+                    mBluetoothActivity.stopScan();
                 }
             }, scanPeriod);
 
@@ -116,7 +109,7 @@ public class Scanner_BTLE {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        mMainActivity.addDevice(device, new_rssi);
+                        mBluetoothActivity.addDevice(device, new_rssi);
                     }
                 });
             }
