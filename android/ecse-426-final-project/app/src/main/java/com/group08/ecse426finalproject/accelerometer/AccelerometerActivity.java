@@ -21,6 +21,7 @@ import java.util.Random;
 import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 
+
 public class AccelerometerActivity extends AppCompatActivity {
     private static final String TAG = "AccelerometerActivity";
     private static final float PITCH_ROLL_RESOLUTION = 65_536f; // 16 bits of resolution
@@ -41,6 +42,7 @@ public class AccelerometerActivity extends AppCompatActivity {
 
         setChartData(pitchChart, randomData(NUM_SAMPLES), "pitch", Color.RED);
         setChartData(rollChart, randomData(NUM_SAMPLES), "roll", Color.BLUE);
+
     }
 
     private void setChartData(LineChart chart, byte[] data, String label, int color) {
@@ -67,11 +69,15 @@ public class AccelerometerActivity extends AppCompatActivity {
         return data;
     }
 
-    private short twoBytesToShort(byte b1, byte b2) {
-        return (short) ((b1 << 8) | (b2 & 0xFF));
+    private int twoBytesToUnsignedInt(byte b1, byte b2) {
+        return shortToUnsignedInt((short)((b1 << 8) | (b2 & 0xFF)));
+    }
+
+    private int shortToUnsignedInt(short s) {
+        return s & 0xFFFF;
     }
 
     private float twoBytesToPitchRollData(byte b1, byte b2) {
-        return (twoBytesToShort(b1, b2) / PITCH_ROLL_RESOLUTION) * MAX_PITCH_ROLL_VALUE;
+        return (twoBytesToUnsignedInt(b1, b2) / PITCH_ROLL_RESOLUTION) * MAX_PITCH_ROLL_VALUE;
     }
 }
