@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.speech;
 
 
 import android.content.Context;
@@ -11,47 +11,50 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.group08.ecse426finalproject.R;
+import com.group08.ecse426finalproject.utils.ResourceAccessor;
+import com.group08.ecse426finalproject.bluetooth.BluetoothTransmitter;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-class SpeechService {
+public class SpeechService {
     private static final String TAG = "SpeechService";
     private static final String SPEECH_URL =
             "https://speech.googleapis.com/v1/speech:recognize?key=";
     private Context context;
     private final BluetoothTransmitter bluetoothTransmitter;
-    private final ResourceAccess resourceAccess;
+    private final ResourceAccessor resourceAccessor;
 
-    SpeechService(Context context, BluetoothTransmitter bluetoothTransmitter, ResourceAccess resourceAccess) {
+    public SpeechService(Context context, BluetoothTransmitter bluetoothTransmitter, ResourceAccessor resourceAccessor) {
         this.context = context;
         this.bluetoothTransmitter = bluetoothTransmitter;
-        this.resourceAccess = resourceAccess;
+        this.resourceAccessor = resourceAccessor;
     }
 
-    void sendDemoRequestString() {
-        sendRequest(resourceAccess.readRawResourceString(R.raw.audio_64));
+    public void sendDemoRequestString() {
+        sendRequest(resourceAccessor.readRawResourceString(R.raw.audio_64));
     }
 
-    void sendDemoRequestBytes() {
-        sendRequest(resourceAccess.readRawResourceBytes(R.raw.audio));
+    public void sendDemoRequestBytes() {
+        sendRequest(resourceAccessor.readRawResourceBytes(R.raw.audio));
     }
 
-    void sendRequest(byte[] audio_bytes) {
+    public void sendRequest(byte[] audio_bytes) {
         String audio_base64 = Base64.encodeToString(audio_bytes, Base64.NO_WRAP);
         sendRequest(audio_base64);
     }
 
-    void sendRequest(String audio_base64) {
+    public void sendRequest(String audio_base64) {
         RequestQueue queue = Volley.newRequestQueue(context);
         JSONObject jsonRequest = new JSONObject();
         try {
-            jsonRequest = new JSONObject(resourceAccess.readRawResourceString(R.raw.sync_request));
+            jsonRequest = new JSONObject(resourceAccessor.readRawResourceString(R.raw.sync_request));
             jsonRequest.getJSONObject("audio").put("content", audio_base64);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        String api_key = resourceAccess.readRawResourceString(R.raw.gcloud_api_key);
+        String api_key = resourceAccessor.readRawResourceString(R.raw.gcloud_api_key);
         JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(Request.Method.POST,
                 SPEECH_URL + api_key, jsonRequest, new Response.Listener<JSONObject>() {
             @Override

@@ -1,8 +1,8 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 
 public class BluetoothTransmitter {
-    void transmitString(String data) {
+    public void transmitString(String data) {
         // TODO: Transmit data back to the Nucleo board here
     }
 }

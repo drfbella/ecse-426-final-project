@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.firebase;
 
 
 import android.net.Uri;
@@ -11,16 +11,16 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-class FirebaseService {
+public class FirebaseService {
     private static final String TAG = "FirebaseService";
     private StorageReference storageRef;
 
-    FirebaseService()
+    public FirebaseService()
     {
         storageRef = FirebaseStorage.getInstance().getReference();
     }
 
-    void uploadBytes(byte[] bytes, String path)
+    public void uploadBytes(byte[] bytes, String path)
     {
         storageRef.child(path).putBytes(bytes)
                 .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {

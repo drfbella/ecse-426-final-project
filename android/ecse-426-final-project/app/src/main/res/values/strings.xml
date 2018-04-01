@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">ECSE426FinalProject</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="speech">Speech</string>
+    <string name="accelerometer">Accelerometer</string>
 </resources>

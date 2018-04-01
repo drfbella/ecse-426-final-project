@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.utils;
 
 
 import android.content.Context;
@@ -7,19 +7,19 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 
-class ResourceAccess {
-    private static final String TAG = "ResourceAccess";
+public class ResourceAccessor {
+    private static final String TAG = "ResourceAccessor";
     private Context context;
 
-    ResourceAccess(Context context) {
+    public ResourceAccessor(Context context) {
         this.context = context;
     }
 
-    String readRawResourceString(int id) {
+    public String readRawResourceString(int id) {
         return new String(readRawResourceBytes(id));
     }
 
-    byte[] readRawResourceBytes(int id) {
+    public byte[] readRawResourceBytes(int id) {
         try {
             InputStream in_s = context.getResources().openRawResource(id);
 
