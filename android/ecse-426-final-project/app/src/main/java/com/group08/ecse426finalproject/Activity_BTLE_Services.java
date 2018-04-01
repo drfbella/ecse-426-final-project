@@ -1,6 +1,7 @@
 package com.group08.ecse426finalproject;
 
 import android.annotation.TargetApi;
+import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.ComponentName;
@@ -26,6 +27,13 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 
     public static final String EXTRA_NAME = "com.group08.ecse426finalproject.Activity_BTLE_Services.NAME";
     public static final String EXTRA_ADDRESS = "com.group08.ecse426finalproject.Activity_BTLE_Services.ADDRESS";
+
+    /*
+        ECSE-426-PROJECT SPECIFIC UUIDs
+     */
+    private UUID accelerometerUuid = null; // TODO: configure audio characteristic UUID
+    private UUID audioUuid = null; // TODO: configure audio characteristic UUID
+
 
 
     // listView for services
@@ -237,7 +245,6 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     }
 
     public byte[] readAudio(){
-        UUID audioUuid = null; // TODO: configure audio characteristic UUID
         BluetoothGattCharacteristic audioCharacteristic = getCharacteristic(audioUuid);
         if(audioCharacteristic == null) {
             Log.d(TAG, "Unable to read audio.");
@@ -247,7 +254,6 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     }
 
     public byte[] readAccelerometer() {
-        UUID accelerometerUuid = null; // TODO: configure audio characteristic UUID
         BluetoothGattCharacteristic accelerometerCharacteristic = getCharacteristic(accelerometerUuid);
         if(accelerometerCharacteristic == null) {
             Log.d(TAG, "Unable to read accelerometer value.");
@@ -256,5 +262,14 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         return accelerometerCharacteristic.getValue();
     }
 
-
+    public void writeAccelerometer(byte[] data){
+        BluetoothGattCharacteristic accelerometerCharacteristic = getCharacteristic(accelerometerUuid);
+        if(accelerometerCharacteristic == null){
+            Log.d(TAG, "Unable to read accelerometer value.");
+            return;
+        }
+        accelerometerCharacteristic.setValue(data);
+        mBTLE_Service.writeCharacteristic(accelerometerCharacteristic);
+        // TODO: need to send the data too?
+    }
 }
