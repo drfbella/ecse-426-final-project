@@ -88,6 +88,8 @@ public class Service_BTLE_GATT extends Service {
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+                // TODO: can implement automatic data polling on services discovered
+                Log.d(TAG, "services discovered, can now press on store values");
             }
             else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
@@ -154,6 +156,10 @@ public class Service_BTLE_GATT extends Service {
         }
 
         sendBroadcast(intent);
+    }
+
+    public BluetoothGatt getGatt() {
+        return mBluetoothGatt;
     }
 
     public class BTLeServiceBinder extends Binder {
