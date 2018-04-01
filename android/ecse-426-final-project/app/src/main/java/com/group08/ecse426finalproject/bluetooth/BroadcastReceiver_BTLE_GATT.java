@@ -1,8 +1,10 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+
+import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
 public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
 
@@ -30,7 +32,7 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         }
         else if (Service_BTLE_GATT.ACTION_GATT_DISCONNECTED.equals(action)) {
             mConnected = false;
-            Utils.toast(activity.getApplicationContext(), "Disconnected From Device");
+            BluetoothUtils.toast(activity.getApplicationContext(), "Disconnected From Device");
             activity.finish();
         }
         else if (Service_BTLE_GATT.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {

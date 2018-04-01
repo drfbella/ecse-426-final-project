@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.utils;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -9,7 +9,10 @@ import android.content.IntentFilter;
 import android.view.Gravity;
 import android.widget.Toast;
 
-public class Utils {
+import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
+import com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT;
+
+public class BluetoothUtils {
 
     public static boolean checkBluetooth(BluetoothAdapter bluetoothAdapter) {
         // Ensures Bluetooth is available on the device and it is enabled. If not,

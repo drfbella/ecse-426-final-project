@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.annotation.TargetApi;
 import android.app.Service;
@@ -16,6 +16,9 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
+
+import com.group08.ecse426finalproject.R;
+import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -38,12 +41,12 @@ public class Service_BTLE_GATT extends Service {
     private static final int STATE_CONNECTING = 1;
     private static final int STATE_CONNECTED = 2;
 
-    public final static String ACTION_GATT_CONNECTED = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_GATT_CONNECTED";
-    public final static String ACTION_GATT_DISCONNECTED = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_GATT_DISCONNECTED";
-    public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_GATT_SERVICES_DISCOVERED";
-    public final static String ACTION_DATA_AVAILABLE = "com.group08.ecse426finalproject.Service_BTLE_GATT.ACTION_DATA_AVAILABLE";
-    public final static String EXTRA_UUID = "com.group08.ecse426finalproject.Service_BTLE_GATT.EXTRA_UUID";
-    public final static String EXTRA_DATA = "com.group08.ecse426finalproject.Service_BTLE_GATT.EXTRA_DATA";
+    public final static String ACTION_GATT_CONNECTED = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.ACTION_GATT_CONNECTED";
+    public final static String ACTION_GATT_DISCONNECTED = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.ACTION_GATT_DISCONNECTED";
+    public final static String ACTION_GATT_SERVICES_DISCOVERED = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.ACTION_GATT_SERVICES_DISCOVERED";
+    public final static String ACTION_DATA_AVAILABLE = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.ACTION_DATA_AVAILABLE";
+    public final static String EXTRA_UUID = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_UUID";
+    public final static String EXTRA_DATA = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_DATA";
 
 
     // Implements callback methods for GATT events that the app cares about.  For example,
@@ -144,7 +147,7 @@ public class Service_BTLE_GATT extends Service {
 
         if (data != null && data.length > 0) {
 
-            intent.putExtra(EXTRA_DATA, new String(data) + "\n" + Utils.hexToString(data));
+            intent.putExtra(EXTRA_DATA, new String(data) + "\n" + BluetoothUtils.hexToString(data));
         }
         else {
             intent.putExtra(EXTRA_DATA, "0");

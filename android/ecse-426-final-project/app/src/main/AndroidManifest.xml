@@ -14,24 +14,24 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".BluetoothActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Activity_BTLE_Services" />
+        <activity android:name=".bluetooth.Activity_BTLE_Services" />
 
         <service
-            android:name=".Service_BTLE_GATT"
+            android:name=".bluetooth.Service_BTLE_GATT"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true"/>
+
+        <activity android:name=".bluetooth.BluetoothActivity"
+                  android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".accelerometer.AccelerometerActivity"
-            android:parentActivityName=".MainActivity"/>
-        <activity
-            android:name=".bluetooth.BluetoothActivity"
             android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".speech.SpeechActivity"

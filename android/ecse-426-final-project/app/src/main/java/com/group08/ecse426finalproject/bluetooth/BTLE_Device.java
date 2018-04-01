@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.bluetooth.BluetoothDevice;
 

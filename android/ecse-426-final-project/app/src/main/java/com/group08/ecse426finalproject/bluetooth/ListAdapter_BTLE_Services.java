@@ -1,20 +1,18 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
-import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
-import android.widget.EditText;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import com.group08.ecse426finalproject.R;
+import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -110,15 +108,15 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
         TextView tv_property = (TextView) convertView.findViewById(R.id.tv_properties);
         StringBuilder sb = new StringBuilder();
 
-        if (Utils.hasReadProperty(properties) != 0) {
+        if (BluetoothUtils.hasReadProperty(properties) != 0) {
             sb.append("R");
         }
 
-        if (Utils.hasWriteProperty(properties) != 0) {
+        if (BluetoothUtils.hasWriteProperty(properties) != 0) {
             sb.append("W");
         }
 
-        if (Utils.hasNotifyProperty(properties) != 0) {
+        if (BluetoothUtils.hasNotifyProperty(properties) != 0) {
             sb.append("N");
         }
 
@@ -128,7 +126,7 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
 
         byte[] data = bluetoothGattCharacteristic.getValue();
         if (data != null) {
-            tv_value.setText("Value: " + Utils.hexToString(data));
+            tv_value.setText("Value: " + BluetoothUtils.hexToString(data));
         }
         else {
             tv_value.setText("Value: ---");

@@ -1,7 +1,6 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.annotation.TargetApi;
-import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.ComponentName;
@@ -16,6 +15,9 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import com.group08.ecse426finalproject.R;
+import com.group08.ecse426finalproject.utils.BluetoothUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +27,8 @@ import java.util.UUID;
 public class Activity_BTLE_Services extends AppCompatActivity implements ExpandableListView.OnChildClickListener {
     private final static String TAG = Activity_BTLE_Services.class.getSimpleName();
 
-    public static final String EXTRA_NAME = "com.group08.ecse426finalproject.Activity_BTLE_Services.NAME";
-    public static final String EXTRA_ADDRESS = "com.group08.ecse426finalproject.Activity_BTLE_Services.ADDRESS";
+    public static final String EXTRA_NAME = "com.group08.ecse426finalproject.bluetooth.Activity_BTLE_Services.NAME";
+    public static final String EXTRA_ADDRESS = "com.group08.ecse426finalproject.bluetooth.Activity_BTLE_Services.ADDRESS";
 
     /*
         ECSE-426-PROJECT SPECIFIC UUIDs
@@ -126,7 +128,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 
         // event handler
         mGattUpdateReceiver = new BroadcastReceiver_BTLE_GATT(this);
-        registerReceiver(mGattUpdateReceiver, Utils.makeGattUpdateIntentFilter());
+        registerReceiver(mGattUpdateReceiver, BluetoothUtils.makeGattUpdateIntentFilter());
 
         // BTLE_GATT service
         mBTLE_Service_Intent = new Intent(this, Service_BTLE_GATT.class);
@@ -166,7 +168,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         // TODO: implement fire base connection here, for read and write
 
         // write-able property
-        if (Utils.hasWriteProperty(characteristic.getProperties()) != 0) {
+        if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
             String uuid = characteristic.getUuid().toString();
 
             Dialog_BTLE_Characteristic dialog_btle_characteristic = new Dialog_BTLE_Characteristic();
@@ -176,11 +178,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             dialog_btle_characteristic.setCharacteristic(characteristic);
 
             dialog_btle_characteristic.show(getFragmentManager(), "Dialog_BTLE_Characteristic");
-        } else if (Utils.hasReadProperty(characteristic.getProperties()) != 0) {
+        } else if (BluetoothUtils.hasReadProperty(characteristic.getProperties()) != 0) {
             if (mBTLE_Service != null) {
                 mBTLE_Service.readCharacteristic(characteristic);
             }
-        } else if (Utils.hasNotifyProperty(characteristic.getProperties()) != 0) {
+        } else if (BluetoothUtils.hasNotifyProperty(characteristic.getProperties()) != 0) {
             if (mBTLE_Service != null) {
                 mBTLE_Service.setCharacteristicNotification(characteristic, true);
             }

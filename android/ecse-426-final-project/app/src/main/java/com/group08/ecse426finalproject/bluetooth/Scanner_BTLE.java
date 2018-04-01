@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -8,6 +8,8 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.content.Context;
 import android.os.Handler;
+
+import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
 @TargetApi(21)
 
@@ -47,8 +49,8 @@ public class Scanner_BTLE {
         return mScanning;
     }
     public void start(){
-        if (!Utils.checkBluetooth(mBluetoothAdapter)) {
-            Utils.requestUserBluetooth(mBluetoothActivity);
+        if (!BluetoothUtils.checkBluetooth(mBluetoothAdapter)) {
+            BluetoothUtils.requestUserBluetooth(mBluetoothActivity);
             mBluetoothActivity.stopScan();
         }
         else {
@@ -63,12 +65,12 @@ public class Scanner_BTLE {
     private void scanLeDevice(final boolean enable){
 
         if(enable && !mScanning) {
-            Utils.toast(mBluetoothActivity.getApplicationContext(), "Started BLE scanning...");
+            BluetoothUtils.toast(mBluetoothActivity.getApplicationContext(), "Started BLE scanning...");
 
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Utils.toast(mBluetoothActivity.getApplicationContext(), "Stopping BLE Scanning...");
+                    BluetoothUtils.toast(mBluetoothActivity.getApplicationContext(), "Stopping BLE Scanning...");
 
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);

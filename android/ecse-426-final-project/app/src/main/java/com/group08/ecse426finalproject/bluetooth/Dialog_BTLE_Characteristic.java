@@ -1,4 +1,4 @@
-package com.group08.ecse426finalproject;
+package com.group08.ecse426finalproject.bluetooth;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.widget.EditText;
+
+import com.group08.ecse426finalproject.R;
 
 public class Dialog_BTLE_Characteristic extends DialogFragment implements DialogInterface.OnClickListener {
 
@@ -30,7 +32,7 @@ public class Dialog_BTLE_Characteristic extends DialogFragment implements Dialog
     public void onClick(DialogInterface dialog, int which) {
 
         // Find a way to check which button as pressed cancel or ok
-//            Utils.toast(activity.getApplicationContext(), "Button " + Integer.toString(which) + " Pressed");
+//            BluetoothUtils.toast(activity.getApplicationContext(), "Button " + Integer.toString(which) + " Pressed");
 
         EditText edit = (EditText) ((AlertDialog) dialog).findViewById(R.id.et_submit);
 
