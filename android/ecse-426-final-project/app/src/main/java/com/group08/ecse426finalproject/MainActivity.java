@@ -10,13 +10,15 @@ import com.group08.ecse426finalproject.accelerometer.AccelerometerActivity;
 import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
 import com.group08.ecse426finalproject.speech.SpeechActivity;
 
-import static com.group08.ecse426finalproject.utils.Constants.ACCELEROMETER_DATA_NAME;
+import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
+import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int BLUETOOTH_ACTIVITY_REQUEST_CODE = 1;
-    private static byte[] accelerometerData = new byte[]{};
+    private static byte[] pitchData = new byte[]{};
+    private static byte[] rollData = new byte[]{};
     private static byte[] speechData = new byte[]{};
 
     @Override
@@ -49,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent i = new Intent(MainActivity.this, AccelerometerActivity.class);
-                i.putExtra(ACCELEROMETER_DATA_NAME, accelerometerData);
+                i.putExtra(PITCH_DATA_NAME, pitchData);
+                i.putExtra(ROLL_DATA_NAME, rollData);
                 startActivity(i);
             }
         });
@@ -60,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == BLUETOOTH_ACTIVITY_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                accelerometerData = data.getByteArrayExtra(ACCELEROMETER_DATA_NAME);
+                pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
+                rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
                 speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
             }
         }

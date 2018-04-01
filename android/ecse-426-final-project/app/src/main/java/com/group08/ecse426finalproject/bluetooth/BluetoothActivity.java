@@ -8,13 +8,15 @@ import android.view.MenuItem;
 
 import com.group08.ecse426finalproject.R;
 
-import static com.group08.ecse426finalproject.utils.Constants.ACCELEROMETER_DATA_NAME;
+import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
+import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
 
 public class BluetoothActivity extends AppCompatActivity {
     private static final String TAG = "BluetoothActivity";
-    private byte[] accelerometerData = new byte[]{}; // TODO: Update accelerometer/speech data
+    private byte[] pitchData = new byte[]{}; // TODO: Update accelerometer/speech data
+    private byte[] rollData = new byte[]{};
     private byte[] speechData = new byte[]{};
 
     @Override
@@ -26,7 +28,8 @@ public class BluetoothActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent i = new Intent();
-        i.putExtra(ACCELEROMETER_DATA_NAME, accelerometerData);
+        i.putExtra(PITCH_DATA_NAME, pitchData);
+        i.putExtra(ROLL_DATA_NAME, rollData);
         i.putExtra(SPEECH_DATA_NAME, speechData);
         setResult(RESULT_OK, i);
         finish();
