@@ -41,24 +41,24 @@ public class SpeechActivity extends AppCompatActivity {
         textTranscript = findViewById(R.id.text_transcript);
 
         byte[] speechData = getIntent().getByteArrayExtra(SPEECH_DATA_NAME);
-        //sendTranscriptionRequest(speechData);
+        //sendGoogleSpeechTranscriptionRequest(speechData);
         sendDemoRequestBytes();
     }
 
     public void sendDemoRequestString() {
-        sendTranscriptionRequest(resourceAccessor.readRawResourceString(R.raw.audio_64));
+        sendGoogleSpeechTranscriptionRequest(resourceAccessor.readRawResourceString(R.raw.audio_64));
     }
 
     public void sendDemoRequestBytes() {
-        sendTranscriptionRequest(resourceAccessor.readRawResourceBytes(R.raw.audio));
+        sendGoogleSpeechTranscriptionRequest(resourceAccessor.readRawResourceBytes(R.raw.audio));
     }
 
-    public void sendTranscriptionRequest(byte[] audio_bytes) {
+    public void sendGoogleSpeechTranscriptionRequest(byte[] audio_bytes) {
         String audio_base64 = Base64.encodeToString(audio_bytes, Base64.NO_WRAP);
-        sendTranscriptionRequest(audio_base64);
+        sendGoogleSpeechTranscriptionRequest(audio_base64);
     }
 
-    public void sendTranscriptionRequest(String audio_base64) {
+    public void sendGoogleSpeechTranscriptionRequest(String audio_base64) {
         RequestQueue queue = Volley.newRequestQueue(this);
         JSONObject jsonRequest = new JSONObject();
         try {
