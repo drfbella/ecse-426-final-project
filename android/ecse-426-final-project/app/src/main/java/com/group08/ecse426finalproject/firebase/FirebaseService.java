@@ -7,11 +7,8 @@ import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -45,24 +42,7 @@ public class FirebaseService {
                 });
     }
 
-    public void uploadBytesUnique(final byte[] bytes, final String path) {
-        databaseReference.child(path).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Integer counter = dataSnapshot.getValue(Integer.class);
-                if (counter == null) {
-                    counter = -1;
-                }
-                databaseReference.child(path).setValue(counter + 1);
-                int dotIndex = path.indexOf('.');
-                uploadBytes(bytes, path.substring(0, dotIndex) + counter + path.substring(dotIndex));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Log.d(TAG, "Failed to read counter.");
-            }
-        });
-
+    public void uploadBytesUnique(final byte[] bytes, final String path, final String extension) {
+        uploadBytes(bytes, path + (System.currentTimeMillis() / 1000) + '.' + extension);
     }
 }
