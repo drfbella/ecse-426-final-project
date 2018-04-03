@@ -40,8 +40,12 @@
 #include "stm32f4xx_hal.h"
 #include "lis3dsh.h"
 #include "accelerometer.h"
+#include "uart.h"
 
-
+#define RECORDING_LED_INDEX 0
+#define DATA_TRANSFER_LED_INDEX 1
+#define TOGGLE_COUNT_LED_INDEX 2
+#define LED_PINS LD4_Pin|LD5_Pin|LD6_Pin
 /* Private variables ---------------------------------------------------------*/
 
 LIS3DSH_InitTypeDef Acc_instance;
@@ -56,8 +60,8 @@ TIM_HandleTypeDef htim2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void MX_ADC1_Init(void);
-void MX_TIM2_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
 
 void accelerometer_init(void);
 void readAccelerometer(void);
@@ -75,6 +79,7 @@ extern int tap;
 extern int tap2;
 
 
+
 int main(void)
 {
 
@@ -87,14 +92,15 @@ MX_TIM2_Init();
 HAL_TIM_Base_Start(&htim2);
 HAL_ADC_Start_IT(&hadc1);
 	
-
+	
 	// and example of sending a data through UART, but you need to configure the UART block:
 	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
-	//UART_Initialize();
-
+	UART_Initialize();
   while (1)
   {
-
+    
+	transmitRollAndPitch(28,95.3);
+/*
 		switch (State){
 		
 		case 0:
@@ -106,7 +112,7 @@ HAL_ADC_Start_IT(&hadc1);
 			readAccelerometer();
 			//Need a way to slow it down to read the second tap. Maybe another if statement with another counter?
 				detect2Tap();
-				if (tap2==1){
+				if (tap2==0){
 				State = 1;
 				}
 				else {
@@ -123,7 +129,7 @@ HAL_ADC_Start_IT(&hadc1);
 			// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer
 			// Could potentially be moved to a function
 		
-		HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, led_pins[RECORDING_LED_INDEX], GPIO_PIN_SET);
 		//Trigger Electret Microphone Breakout, might be as simple as connecting the adc pin with the microphone
 		HAL_ADC_Start(&hadc1); 	
 		//will put in bytes later
@@ -139,7 +145,7 @@ HAL_ADC_Start_IT(&hadc1);
 		
 		case 2:
 			//state 2, led red on data transfer
-		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOD, led_pins[DATA_TRANSFER_LED_INDEX], GPIO_PIN_SET);
 		break;
 		
 		case 3:
@@ -154,7 +160,7 @@ HAL_ADC_Start_IT(&hadc1);
 		case 5:
 			// Blink LED2 blue N times
 		break;		
-		}	
+		}	*/
   }
 
 }

@@ -46,6 +46,7 @@
 #include "debug.h"
 #include "stm32_bluenrg_ble.h"
 #include "bluenrg_utils.h"
+#include "uart.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -259,8 +260,11 @@ int main(void)
   /* Set output power level */
   ret = aci_hal_set_tx_power_level(1,4);
 
+  UART_Initialize();
+	
   while(1)
   {
+    recieveMessage();
     HCI_Process();
     User_Process(&axes_data);
 #if NEW_SERVICES

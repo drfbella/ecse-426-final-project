@@ -129,24 +129,24 @@ int detectTap(void){
 		
 		float largeY = -50000.0;
 		float smallY = 50000.0;
+		int startTime = HAL_GetTick();
 		
-		for (int j = 0; j < windowSize; j++){
+		while((HAL_GetTick()-startTime)< 1000 && tap2 == 0){
+			for (int j = 0; j < windowSize; j++){
 			
-			//This way, I'm always storing the current value of acc
-			if (accYWindow[j] > largeY){
-			largeY = accYWindow[j];
-			}
+				//This way, I'm always storing the current value of acc
+				if (accYWindow[j] > largeY){
+					largeY = accYWindow[j];
+				}
 			
-			if (accYWindow[j] < smallY){
-			smallY = accYWindow[j];
+				if (accYWindow[j] < smallY){
+					smallY = accYWindow[j];
+				}
 			}
-		}
 			if ((fabs(largeY) - fabs(smallY) > 25)){
-			
-			tap2 = 1;
-			
+				tap2 = 1;
+			}	
 		}
-			return tap2;
-	
+		return tap2;	
 	}
 

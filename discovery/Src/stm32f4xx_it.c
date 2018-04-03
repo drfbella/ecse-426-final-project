@@ -39,6 +39,7 @@
 extern uint8_t MyFlag;
 extern TIM_HandleTypeDef timer_uart;
 extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef uart_handle;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -81,6 +82,10 @@ void ADC_IRQHandler(void)
 
   /* USER CODE END ADC_IRQn 1 */
 }
+//void UART_IRQHandler(void)
+//{
+//  HAL_UART_IRQHandler(&uart_handle);
+//}
 
 
 /* USER CODE BEGIN 1 */
