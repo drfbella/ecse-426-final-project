@@ -9,7 +9,7 @@
 uint8_t status;
 float Buffer[3];
 float accX, accY, accZ;
-uint8_t MyFlag = 0;
+uint32_t MyFlag = 0;
 float accValue[3] = {0,0,0};
 extern int counter;
 extern float accXWindow[];
@@ -18,7 +18,20 @@ extern float accZWindow[];
 extern int windowSize;
 int tap = 0;
 int tap2 = 0;
-	
+int z = 0;
+#define bLength 5 //length of coefficient array for FIR filter
+#define STORED_LENGTH 10 // length of stored output vector used in calculating RMS
+
+//for use by the FIR filter
+float fir_coefficients[bLength] = { 0.2, 0.2, 0.2, 0.2, 0.2 };
+int currentFilterWindow[bLength] = { 0, 0, 0, 0, 0 };
+
+	float accXphaseTwo[100] = {0.0};
+	float accYphaseTwo[100] = {0.0};
+	float accZphaseTwo[100] = {0.0};
+	float filteredAccX[100] = {0.0};
+	float filteredAccY[100] = {0.0};
+	float filteredAccZ[100] = {0.0};
 
 void accelerometer_init(void) {
 
@@ -48,6 +61,51 @@ void accelerometer_init(void) {
 
 	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);*/
+
+}
+/**
+  * @brief calculates the moving average based ont he values stored in the currentFilterWIndow and the new value passed as Input
+	*					FIR filter of order 4 (from lab 1)
+  * @param  Input new incoming value to be filtered
+						Output pointer to location resultant float is to be stored
+  * @retval void
+ */
+ void FIR_C(int Input, float*Output) {
+	int i;
+
+	//take window, shift, add input to the end
+	for (i = bLength - 1; i > 0; i--) {
+		currentFilterWindow[i] = currentFilterWindow[i - 1];
+	}
+	currentFilterWindow[0] = Input;
+
+	//take weighted average
+	for (i = 0; i < bLength; i++) {
+		*Output = *Output + (float)currentFilterWindow[i] * fir_coefficients[i];
+	}
+}
+
+void accForTenSec(void){
+	MyFlag = 0;
+
+	while (MyFlag <= 1000){
+		LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
+				//The first four bits denote if we have new data on all XYZ axes, 
+		   	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
+				if ((status & 0x0F) != 0x00)
+				{
+					LIS3DSH_ReadACC(&Buffer[0]);
+					accXphaseTwo[z] = (float)Buffer[0];
+					accYphaseTwo[z] = (float)Buffer[1];
+					accZphaseTwo[z] = (float)Buffer[2];
+			
+					FIR_C(accXphaseTwo[z], &filteredAccX[z]);
+					FIR_C(accYphaseTwo[z], &filteredAccY[z]);
+					FIR_C(accZphaseTwo[z], &filteredAccZ[z]);
+					
+					z++;
+				}
+	}
 
 }
 

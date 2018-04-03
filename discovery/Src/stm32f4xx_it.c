@@ -48,7 +48,7 @@ extern ADC_HandleTypeDef hadc1;
 /******************************************************************************/
 
 /**
-* @brief This function handles System tick timer.
+* @brief This function handles System tick timer. Systick ticks every 1ms. need 10000 ticks
 */
 void SysTick_Handler(void)
 {

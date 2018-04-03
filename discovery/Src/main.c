@@ -59,20 +59,35 @@ static void MX_GPIO_Init(void);
 void MX_ADC1_Init(void);
 void MX_TIM2_Init(void);
 
+
 void accelerometer_init(void);
 void readAccelerometer(void);
+void accForTenSec(void);
 int detectTap(void);
 int detect2Tap(void);
+//int recieve();
+//int transmit();
 
 const uint16_t led_pins[] = {LD4_Pin,LD5_Pin,LD6_Pin};
 int State = 0;
+int N = 0;
 int counter = 0;
 float accXWindow[10] = {0.0};
 float accYWindow[10] = {0.0};
 float accZWindow[10] = {0.0};
 int windowSize = 10;
+int audioBufferIndex = -1;
+int audioBuffer[10000] = {0};
 extern int tap;
 extern int tap2;
+extern int z;
+extern 	float filteredAccX[100];
+extern 	float filteredAccY[100];
+extern 	float filteredAccZ[100];
+
+
+float roll[100] = {0.0};
+float pitch[100] = {0.0};
 
 
 int main(void)
@@ -94,9 +109,7 @@ HAL_ADC_Start_IT(&hadc1);
 
   while (1)
   {
-
-		switch (State){
-		
+		switch (State){	
 		case 0:
 			//State 0: read acc and detect tap	
 		readAccelerometer();
@@ -107,10 +120,10 @@ HAL_ADC_Start_IT(&hadc1);
 			//Need a way to slow it down to read the second tap. Maybe another if statement with another counter?
 				detect2Tap();
 				if (tap2==1){
-				State = 1;
+				State = 2;
 				}
 				else {
-				State = 2;}
+				State = 1;}
 			}
 			else {
 			State = 0;
@@ -125,41 +138,58 @@ HAL_ADC_Start_IT(&hadc1);
 		
 		HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
 		//Trigger Electret Microphone Breakout, might be as simple as connecting the adc pin with the microphone
+		//Transmit uart
 		HAL_ADC_Start(&hadc1); 	
 		//will put in bytes later
-		int i = -1;
-		int audioBuffer[10000] = {0};
 		while(HAL_ADC_PollForConversion(&hadc1, 10000) == HAL_OK){
-			i++;
-			audioBuffer[i] = HAL_ADC_GetValue(&hadc1);
-			printf("audio %i \n", audioBuffer[i]);
+			audioBufferIndex++;
+			audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
+			printf("audio %i \n", audioBuffer[audioBufferIndex]);
 		}
-		
+		//transmit(audioBuffer);
+		State = 3;
 		break;
 		
 		case 2:
 			//state 2, led red on data transfer
+		  //record the pitch and roll values for 10s, calculate pitch and roll
+		
 		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
+			accForTenSec();
+			for (int h = 0; h<=z; h++){
+				pitch[h] = calcPitch(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
+				roll[h] = calcRoll(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
+			}
+			//transmit(pitch);
+			//transmit(roll);
+			HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);
+			
+			State = 0;
 		break;
 		
 		case 3:
 			// wait till integer N arrives from nucleo board
-		break;
-		
-		case 4:
-			// 2 taps detected sampling f 100Hz read for 10s
-		  // read acc & record pitch and roll
-		break;
-		
-		case 5:
 			// Blink LED2 blue N times
-		break;		
+		//	N = recieve();
+		
+			for (int i = 0; i < N+1; i++){
+			HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
+				
+				for (int k = 0; k<300; k++){
+				int delaying = 0;
+				delaying ++;				
+				}			
+			HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
+				
+			}
+			
+			State = 0;
+		break;
+		
+				
 		}	
   }
-
 }
-
-
 
 /** System Clock Configuration
 */
@@ -240,6 +270,7 @@ void SystemClock_Config(void)
      PB6   ------> I2C1_SCL
      PB9   ------> I2C1_SDA
 */
+
 
 /* ADC1 init function */
 static void MX_ADC1_Init(void)
