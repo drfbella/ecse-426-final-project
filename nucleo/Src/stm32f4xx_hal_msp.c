@@ -4,10 +4,9 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
   GPIO_InitTypeDef  GPIO_InitStruct;
   
 
-  __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
 
-  __HAL_RCC_USART6_CLK_ENABLE(); 
+  __HAL_RCC_USART2_CLK_ENABLE(); 
   
 
   GPIO_InitStruct.Pin       = GPIO_PIN_2;
@@ -28,8 +27,8 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart)
 
 void HAL_UART_MspDeInit(UART_HandleTypeDef *huart)
 {
-  __HAL_RCC_USART6_FORCE_RESET();
-  __HAL_RCC_USART6_RELEASE_RESET();
+  __HAL_RCC_USART2_FORCE_RESET();
+  __HAL_RCC_USART2_RELEASE_RESET();
 
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_2);
   HAL_GPIO_DeInit(GPIOA, GPIO_PIN_3);

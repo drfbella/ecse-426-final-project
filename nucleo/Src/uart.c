@@ -19,29 +19,29 @@ uint8_t rxBuffer[RX_BUFFER_SIZE];
 void UART_Initialize(void)
 {
   HAL_UART_MspInit(&uart_handle);
-	UART_InitTypeDef uart_init;
-	
+
 	__HAL_RCC_USART2_CLK_ENABLE();
-	
+  uart_handle.Instance = USART2;
+
+  
 	// Initialize TX
-	uart_init.BaudRate = 115200;
-	uart_init.WordLength = UART_WORDLENGTH_8B;
-	uart_init.StopBits = UART_STOPBITS_1;
-	uart_init.Parity = UART_PARITY_NONE;
-	uart_init.HwFlowCtl = UART_HWCONTROL_NONE;
-	uart_init.Mode = UART_MODE_TX_RX;
-	uart_init.OverSampling = UART_OVERSAMPLING_16;
+	uart_handle.Init.BaudRate = 115200;
+	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
+	uart_handle.Init.StopBits = UART_STOPBITS_1;
+	uart_handle.Init.Parity = UART_PARITY_NONE;
+	uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	uart_handle.Init.Mode = UART_MODE_TX_RX;
+	uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;
 	
-	uart_handle.Init = uart_init;
-	uart_handle.Instance = USART2;
+
 	
 	if (HAL_UART_Init(&uart_handle) != HAL_OK)
 	{
 		//Print statements for possible errors. Errors to be determined see main 347
 	}
 	
-	HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
-  HAL_NVIC_EnableIRQ(USART2_IRQn);
+//	HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
+//  HAL_NVIC_EnableIRQ(USART2_IRQn);
 }
 
 
