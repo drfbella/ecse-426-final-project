@@ -41,7 +41,10 @@
 #include "lis3dsh.h"
 #include "accelerometer.h"
 
-
+#define STATE_DETECT_TAP 0
+#define STATE_RECORD_AUDIO 1
+#define STATE_READ_ACCEL 2
+#define STATE_RECIEVE_RESPONSE 3
 /* Private variables ---------------------------------------------------------*/
 
 LIS3DSH_InitTypeDef Acc_instance;
@@ -56,39 +59,37 @@ TIM_HandleTypeDef htim2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-void MX_ADC1_Init(void);
-void MX_TIM2_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
 
 
-void accelerometer_init(void);
-void readAccelerometer(void);
-void accForTenSec(void);
-int detectTap(void);
-int detect2Tap(void);
 //int recieve();
 //int transmit();
 
 const uint16_t led_pins[] = {LD4_Pin,LD5_Pin,LD6_Pin};
-int State = 0;
+int State = STATE_DETECT_TAP;
 int N = 0;
 int counter = 0;
-float accXWindow[10] = {0.0};
-float accYWindow[10] = {0.0};
-float accZWindow[10] = {0.0};
-int windowSize = 10;
+
+
 int audioBufferIndex = -1;
 int audioBuffer[10000] = {0};
-extern int tap;
-extern int tap2;
 extern int z;
 extern 	float filteredAccX[100];
 extern 	float filteredAccY[100];
 extern 	float filteredAccZ[100];
 
+int newValueReady = 0;
+int tenSecondsCounter = 0;
+volatile uint32_t oneSecondCounter = 0;
 
 float roll[100] = {0.0};
 float pitch[100] = {0.0};
 
+/*The handler for the ADC automatically calls callback. Should send the value to the filter, calculate min/max, rms*/
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+  newValueReady = 1;
+}
 
 int main(void)
 {
@@ -99,9 +100,10 @@ MX_GPIO_Init();
 accelerometer_init();	
 MX_ADC1_Init();
 MX_TIM2_Init();
-HAL_TIM_Base_Start(&htim2);
-HAL_ADC_Start_IT(&hadc1);
-	
+HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
+
+  
+
 
 	// and example of sending a data through UART, but you need to configure the UART block:
 	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
@@ -110,50 +112,65 @@ HAL_ADC_Start_IT(&hadc1);
   while (1)
   {
 		switch (State){	
-		case 0:
+		case STATE_DETECT_TAP:
 			//State 0: read acc and detect tap	
 		readAccelerometer();
 		if (counter > 200){
-		detectTap();
-			if (tap == 1){
-			readAccelerometer();
-			//Need a way to slow it down to read the second tap. Maybe another if statement with another counter?
-				detect2Tap();
-				if (tap2==1){
-				State = 2;
-				}
-				else {
-				State = 1;}
+			if (detectTap()){
+        oneSecondCounter = 0;
+        while(oneSecondCounter < 50){
+          readAccelerometer();
+        }
+        oneSecondCounter = 0;
+        int tap2 = 0;
+        while(oneSecondCounter < 1000){
+          if(detectTap()){
+            State = STATE_READ_ACCEL;
+            tap2 = 1;
+            break;            
+          }
+        }
+				if(tap2 == 0){
+          newValueReady = 0;
+          oneSecondCounter = 0;
+          audioBufferIndex = 0;
+          HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
+          HAL_TIM_Base_Start(&htim2);
+          HAL_ADC_Start_IT(&hadc1);
+          State = STATE_RECORD_AUDIO;
+        }
 			}
-			else {
-			State = 0;
-			}
+
 		}
-		
+
 		break;
 		
-		case 1:
+		case STATE_RECORD_AUDIO:
 			// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer
 			// Could potentially be moved to a function
 		
-		HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
 		//Trigger Electret Microphone Breakout, might be as simple as connecting the adc pin with the microphone
 		//Transmit uart
-		HAL_ADC_Start(&hadc1); 	
+//		HAL_ADC_Start(&hadc1); 	
 		//will put in bytes later
-		while(HAL_ADC_PollForConversion(&hadc1, 10000) == HAL_OK){
-			audioBufferIndex++;
-			audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
-			printf("audio %i \n", audioBuffer[audioBufferIndex]);
-		}
-		//transmit(audioBuffer);
-		State = 3;
+		  if(newValueReady){
+        audioBufferIndex++;
+        //audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
+        newValueReady = 0;
+        printf("audio %i \n", audioBuffer[audioBufferIndex]);
+      }
+      if(oneSecondCounter > 1000){
+        HAL_ADC_Stop_IT(&hadc1); 
+        HAL_TIM_Base_Stop(&htim2);
+        HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET);
+        State = STATE_RECIEVE_RESPONSE;
+      }
 		break;
 		
-		case 2:
+		case STATE_READ_ACCEL:
 			//state 2, led red on data transfer
 		  //record the pitch and roll values for 10s, calculate pitch and roll
-		
+
 		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
 			accForTenSec();
 			for (int h = 0; h<=z; h++){
@@ -164,10 +181,10 @@ HAL_ADC_Start_IT(&hadc1);
 			//transmit(roll);
 			HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);
 			
-			State = 0;
+			State = STATE_DETECT_TAP;
 		break;
 		
-		case 3:
+		case STATE_RECIEVE_RESPONSE:
 			// wait till integer N arrives from nucleo board
 			// Blink LED2 blue N times
 		//	N = recieve();
@@ -182,8 +199,10 @@ HAL_ADC_Start_IT(&hadc1);
 			HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
 				
 			}
+      
+
 			
-			State = 0;
+			State = STATE_DETECT_TAP;
 		break;
 		
 				
@@ -278,11 +297,11 @@ static void MX_ADC1_Init(void)
 
   ADC_ChannelConfTypeDef sConfig;
 
-    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
+    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
-  hadc1.Init.Resolution = ADC_RESOLUTION_8B; //tbd if 8 is enough
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.ScanConvMode = DISABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
@@ -290,26 +309,27 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_TRGO;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 1;
-  hadc1.Init.DMAContinuousRequests = DISABLE;
+	hadc1.Init.NbrOfDiscConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;//
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+     _Error_Handler(__FILE__, __LINE__);
   }
 
-    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+		 _Error_Handler(__FILE__, __LINE__);
   }
 
 }
 
-/* TIM2 init function ADC timer*/
+/* TIM2 init function */
 static void MX_TIM2_Init(void)
 {
 
@@ -323,20 +343,20 @@ static void MX_TIM2_Init(void)
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+     _Error_Handler(__FILE__, __LINE__);
   }
 
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
   if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+     _Error_Handler(__FILE__, __LINE__);
   }
 
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+     _Error_Handler(__FILE__, __LINE__);
   }
 
 }

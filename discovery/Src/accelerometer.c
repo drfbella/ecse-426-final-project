@@ -12,12 +12,11 @@ float accX, accY, accZ;
 uint32_t MyFlag = 0;
 float accValue[3] = {0,0,0};
 extern int counter;
-extern float accXWindow[];
-extern float accYWindow[];
-extern float accZWindow[];
-extern int windowSize;
-int tap = 0;
-int tap2 = 0;
+float accXWindow[10] = {0.0};
+float accYWindow[10] = {0.0};
+float accZWindow[10] = {0.0};
+int windowSize = 10;
+
 int z = 0;
 #define bLength 5 //length of coefficient array for FIR filter
 #define STORED_LENGTH 10 // length of stored output vector used in calculating RMS
@@ -157,6 +156,7 @@ void readAccelerometer(){
 
 int detectTap(void){
 	
+  int tap = 0;
 	/*Accelerometer data changes most notably in the y axis upon tap
 		This could be optimized but say we detext a tap if there's a change of 25mm/s^2 */
 	
@@ -183,28 +183,4 @@ int detectTap(void){
 	
 	}
 	
-	int detect2Tap(void){
-		
-		float largeY = -50000.0;
-		float smallY = 50000.0;
-		
-		for (int j = 0; j < windowSize; j++){
-			
-			//This way, I'm always storing the current value of acc
-			if (accYWindow[j] > largeY){
-			largeY = accYWindow[j];
-			}
-			
-			if (accYWindow[j] < smallY){
-			smallY = accYWindow[j];
-			}
-		}
-			if ((fabs(largeY) - fabs(smallY) > 25)){
-			
-			tap2 = 1;
-			
-		}
-			return tap2;
-	
-	}
 

@@ -40,7 +40,7 @@ extern uint8_t MyFlag;
 extern TIM_HandleTypeDef timer_uart;
 extern ADC_HandleTypeDef hadc1;
 /* USER CODE END 0 */
-
+extern volatile uint32_t oneSecondCounter;
 /* External variables --------------------------------------------------------*/
 
 /******************************************************************************/
@@ -59,6 +59,7 @@ void SysTick_Handler(void)
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
 	MyFlag ++;
+  oneSecondCounter++;
   /* USER CODE END SysTick_IRQn 1 */
 }
 
