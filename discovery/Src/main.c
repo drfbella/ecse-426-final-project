@@ -52,9 +52,10 @@ LIS3DSH_InitTypeDef Acc_instance;
 ADC_HandleTypeDef hadc1;
 TIM_HandleTypeDef htim2;
 
+
 /* Private variables ---------------------------------------------------------*/
 
-	
+static void MX_USART1_UART_Init(void);	
 	
 
 /* Private function prototypes -----------------------------------------------*/
@@ -63,6 +64,8 @@ static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 
+UART_HandleTypeDef huart1;
+	
 void accelerometer_init(void);
 void readAccelerometer(void);
 int detectTap(void);
@@ -91,6 +94,8 @@ MX_ADC1_Init();
 MX_TIM2_Init();
 HAL_TIM_Base_Start(&htim2);
 HAL_ADC_Start_IT(&hadc1);
+HAL_UART_MspInit(&huart1);
+MX_USART1_UART_Init();
 	
 	
 	// and example of sending a data through UART, but you need to configure the UART block:
