@@ -5,6 +5,7 @@ float calcPitch(float x, float y, float z);
 float calcRoll(float x, float y, float z);
 void readAccelerometer(void);
 int detectTap(void);
-int detect2Tap(void);
-
+void FIR_C(int Input, float*Output);
+void accForTenSec(void);
+void accelerometer_init(void);
 #endif
