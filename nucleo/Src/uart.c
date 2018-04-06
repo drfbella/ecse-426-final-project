@@ -18,7 +18,7 @@ uint8_t rxBuffer[RX_BUFFER_SIZE];
 
 void UART_Initialize(void)
 {
-  HAL_UART_MspInit(&uart_handle);
+//  HAL_UART_MspInit(&uart_handle);
 
 	__HAL_RCC_USART2_CLK_ENABLE();
   uart_handle.Instance = USART2;

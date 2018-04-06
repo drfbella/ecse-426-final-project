@@ -8,11 +8,13 @@
 #define TX_BUFFER_SIZE 10 //size of buffer used for transmitting
 #define RX_BUFFER_SIZE 10 //size of buffer used for recieving
 
-	//pin tx A2, rx   on stm32f407
+//pin tx A2, rx   on stm32f407
 
 UART_HandleTypeDef uart_handle;
 
+//buffer for outgoing data
 uint8_t txBuffer[TX_BUFFER_SIZE];
+//buffer for incoming data
 uint8_t rxBuffer[RX_BUFFER_SIZE];
 
 void UART_Initialize(void)
@@ -20,7 +22,7 @@ void UART_Initialize(void)
 	
 	__HAL_RCC_USART2_CLK_ENABLE();
 	
-	// Initialize TX
+	// Initialize
 	uart_handle.Instance = USART2;
 
 	uart_handle.Init.BaudRate = 115200;
@@ -36,17 +38,15 @@ void UART_Initialize(void)
 	{
 		//Print statements for possible errors. Errors to be determined see main 347
 	}
-	
-//	HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
-//  HAL_NVIC_EnableIRQ(USART2_IRQn);
+
+	HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
+  HAL_NVIC_EnableIRQ(USART2_IRQn);
 }
 
 
 
 /**
-  * @brief  Calls HAL_UART_Transmit to send an amount of data in blocking mode using uart_handle and TIMEOUT. 
-  * @param  pData: Pointer to data buffer
-  * @param  numByts: Amount of data to be sent in bytes
+  * @brief  Calls HAL_UART_Transmit to send data in txBuffer in blocking mode using uart_handle and TIMEOUT. 
   * @retval None
   */
 void transmit(){
@@ -55,9 +55,11 @@ void transmit(){
   }
 }
 
+/**
+  * @brief  Calls HAL_UART_Recieve to recieve data into rxBuffer in blocking mode using uart_handle and TIMEOUT. 
+  * @retval None
+  */
 void recieve(){
-	
-//	memset(rxBuffer, 0, RX_BUFFER_SIZE); //clear recieving buffer of junk
 	if(HAL_OK != HAL_UART_Receive(&uart_handle, rxBuffer, RX_BUFFER_SIZE, TIMEOUT)){
 		    _Error_Handler(__FILE__, __LINE__);
 	}	
@@ -65,6 +67,12 @@ void recieve(){
 	//format data somehow
 }
 
+/**
+  * @brief  maps an angle in degrees stored as a float to 2 bytes
+  * @param 	toEncode a float value to to encode into 2 bytes (0 -360 degrees)
+  * @brief  encoded a byte array of size 2 representing the float value 
+  * @retval None
+  */
 void encodeFloatDegree(float toEncode, uint8_t encoded[]){
 	
 	//in case the given roll or pitch value is negative, want an unsigned value
@@ -109,10 +117,4 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
 }
 */
 
-/**
-  * @brief  Encodes a float representing an angle in degrees (from 0 to 360) into 2 bytes
-  * @param  toEncode a float value to encode
-  * @param encoded a byte array of size 2 to store the result
-  * @retval None
-  */
 
