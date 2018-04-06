@@ -3,5 +3,6 @@
 
 void UART_Initialize(void);
 void recieveMessage(void);
+void transmitTest(void);
 
 #endif 

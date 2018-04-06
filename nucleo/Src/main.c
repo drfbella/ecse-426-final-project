@@ -264,7 +264,7 @@ int main(void)
 	
   while(1)
   {
-    recieveMessage();
+    transmitTest();
     HCI_Process();
     User_Process(&axes_data);
 #if NEW_SERVICES

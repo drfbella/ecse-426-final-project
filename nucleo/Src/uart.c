@@ -52,9 +52,12 @@ void UART_Initialize(void)
   * @param  numByts: Amount of data to be sent in bytes
   * @retval None
   */
+int transmitFail = 0;
+HAL_StatusTypeDef retTX = HAL_OK;
 void transmit(){
-	if(HAL_OK != HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT)){
-		    //todo error
+	retTX = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT);
+	if(HAL_OK != retTX){
+		    
 	}
 }
 HAL_StatusTypeDef ret = HAL_OK;
@@ -70,6 +73,12 @@ void recieve(){
 		    //todo error
 	}	
 	//format data somehow
+}
+
+void transmitTest(){
+	txBuffer[0] = 1;
+	txBuffer[6] = 4;
+	transmit();
 }
 
 void recieveMessage(){
