@@ -6,6 +6,7 @@
 
 #define PI 3.14159265358979323846
 
+
 uint8_t status;
 float Buffer[3];
 float accX, accY, accZ;
@@ -17,20 +18,20 @@ float accYWindow[10] = {0.0};
 float accZWindow[10] = {0.0};
 int windowSize = 10;
 
-int z = 0;
+int accelIndex = 0;
 #define bLength 5 //length of coefficient array for FIR filter
 #define STORED_LENGTH 10 // length of stored output vector used in calculating RMS
 
-//for use by the FIR filter
-float fir_coefficients[bLength] = { 0.2, 0.2, 0.2, 0.2, 0.2 };
-int currentFilterWindow[bLength] = { 0, 0, 0, 0, 0 };
+	//for use by the FIR filter
+	float fir_coefficients[bLength] = { 0.2, 0.2, 0.2, 0.2, 0.2 };
+	float currentFilterWindow[bLength] = { 0, 0, 0, 0, 0 };
 
-	float accXphaseTwo[100] = {0.0};
-	float accYphaseTwo[100] = {0.0};
-	float accZphaseTwo[100] = {0.0};
-	float filteredAccX[100] = {0.0};
-	float filteredAccY[100] = {0.0};
-	float filteredAccZ[100] = {0.0};
+	//buffer for acceleration values
+	float filteredAccX[ACCELERATION_BUFFER_SIZE] = {0.0};
+	float filteredAccY[ACCELERATION_BUFFER_SIZE] = {0.0};
+	float filteredAccZ[ACCELERATION_BUFFER_SIZE] = {0.0};
+	float storedRoll[ACCELERATION_BUFFER_SIZE] = {0};
+	float storedPitch[ACCELERATION_BUFFER_SIZE] = {0};
 
 void accelerometer_init(void) {
 
@@ -69,7 +70,7 @@ void accelerometer_init(void) {
 						Output pointer to location resultant float is to be stored
   * @retval void
  */
- void FIR_C(int Input, float*Output) {
+ void FIR_C(float Input, float*Output) {
 	int i;
 
 	//take window, shift, add input to the end
@@ -84,24 +85,31 @@ void accelerometer_init(void) {
 	}
 }
 
-void accForTenSec(void){
-		LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
-				//The first four bits denote if we have new data on all XYZ axes, 
-		   	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
-				if ((status & 0x0F) != 0x00)
-				{
-					LIS3DSH_ReadACC(&Buffer[0]);
-					accXphaseTwo[z] = (float)Buffer[0];
-					accYphaseTwo[z] = (float)Buffer[1];
-					accZphaseTwo[z] = (float)Buffer[2];
-			
-					FIR_C(accXphaseTwo[z], &filteredAccX[z]);
-					FIR_C(accYphaseTwo[z], &filteredAccY[z]);
-					FIR_C(accZphaseTwo[z], &filteredAccZ[z]);
-					
-					z++;
-				}
+void resetAccelIndex(void){
+	accelIndex = 0;
 }
+
+int storeAccelValues(void){
+	if(accelIndex >= ACCELERATION_BUFFER_SIZE ){
+		printf("ACCELERATION BUFFER FULL OH NOS");
+		return -1;
+	}
+	LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
+	//The first four bits denote if we have new data on all XYZ axes, 
+	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
+	if ((status & 0x0F) != 0x00){
+		LIS3DSH_ReadACC(&Buffer[0]);
+		FIR_C((float)Buffer[0], &filteredAccX[accelIndex]);
+		FIR_C((float)Buffer[1], &filteredAccY[accelIndex]);
+		FIR_C((float)Buffer[2], &filteredAccZ[accelIndex]);
+
+		storedPitch[accelIndex] = calcPitch(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
+		storedRoll[accelIndex] = calcRoll(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
+		accelIndex++;
+		return 0;
+	}
+}
+
 
 float calcPitch(float x, float y, float z){
 float pitch = atan2(y,(sqrt(x*x + z*z)))* 180 / PI;
@@ -114,12 +122,12 @@ float roll = atan2(-x,z) * 180 / PI;
 }
 
 void readAccelerometer(){
-
  
-		if (MyFlag/10) //which means it's true every 0.2s
-		{
-			counter = counter + 1; //This counter is gonna count to about 200 until I care about the value of the accelerometer, to allow it to stabilize
-			MyFlag = 0;
+		//TODO can probably do this with a delay in the main loop instead
+		//commenting out here, because for second tap detection, 200 ms between readings might not be enough - need to refresh the whole window 
+//		if (MyFlag/10) //which means it's true every 0.2s
+//		{
+//			MyFlag = 0;
 			//Reading the accelerometer status register
 				LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
 				//The first four bits denote if we have new data on all XYZ axes, 
@@ -146,7 +154,7 @@ void readAccelerometer(){
 						accYWindow[windowSize-1] = accY;
 						accZWindow[windowSize-1] = accZ;
 				}
-			}
+//			}
 	}
 
 int detectTap(void){
@@ -155,27 +163,46 @@ int detectTap(void){
 	/*Accelerometer data changes most notably in the y axis upon tap
 		This could be optimized but say we detext a tap if there's a change of 25mm/s^2 */
 	
-		float largeY = -50000.0;
-		float smallY = 50000.0;
+	float largeY = -50000.0;
+	float smallY = 50000.0;
 		
-		for (int j = 0; j < windowSize; j++){
+	for (int j = 0; j < windowSize; j++){
 			
-			//This way, I'm always storing the current value of acc
-			if (accYWindow[j] > largeY){
+		//This way, I'm always storing the current value of acc
+		if (accYWindow[j] > largeY){
 			largeY = accYWindow[j];
-			}
-			
-			if (accYWindow[j] < smallY){
+		}	
+		if (accYWindow[j] < smallY){
 			smallY = accYWindow[j];
-			}
 		}
-			if ((fabs(largeY) - fabs(smallY) > 25)){
-			
-			tap = 1;
-			
-		}
-			return tap;
-	
 	}
+	if ((fabs(largeY) - fabs(smallY) > 25)){
+			printf("tap detected \n");
+			tap = 1;	
+	}
+	return tap;
+	
+}
+
+int howManyTaps(void){
+
+	if (detectTap()){
+		HAL_Delay(100); //TODO trying to delay 1ms
+		for(int i = 0; i < 10; i++){ //TODO now need to refresh window contents, and make sure old values that flagged as a tap are gone before checking for a second tap 
+			readAccelerometer();
+			HAL_Delay(20); // 
+		}
+		for(int i = 0; i < 20; i++){ //TODO ok so with a delay of 200ms and 20 checks, a double tap must be detected within 2ish seconds
+			readAccelerometer();
+			if(detectTap()){
+				return 2;
+        }
+			HAL_Delay(200);//new reading every 200ms, TODO select
+      }
+		return 1;
+		}
+	return 0;
+
+}
 	
 
