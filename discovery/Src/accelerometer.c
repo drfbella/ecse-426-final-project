@@ -106,8 +106,8 @@ int storeAccelValues(void){
 		storedPitch[accelIndex] = calcPitch(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
 		storedRoll[accelIndex] = calcRoll(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
 		accelIndex++;
-		return 0;
 	}
+	return 0;
 }
 
 
