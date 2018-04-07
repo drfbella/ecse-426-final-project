@@ -20,8 +20,8 @@ void UART_Initialize(void)
 {
 //  HAL_UART_MspInit(&uart_handle);
 
-	__HAL_RCC_USART2_CLK_ENABLE();
-  uart_handle.Instance = USART2;
+	__HAL_RCC_USART1_CLK_ENABLE();
+  uart_handle.Instance = USART1;
 
   
 	// Initialize TX
@@ -40,8 +40,8 @@ void UART_Initialize(void)
 		//Print statements for possible errors. Errors to be determined see main 347
 	}
 	
-//	HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
-//  HAL_NVIC_EnableIRQ(USART2_IRQn);
+//	HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
+//  HAL_NVIC_EnableIRQ(USART1_IRQn);
 }
 
 
