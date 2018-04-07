@@ -187,12 +187,12 @@ int detectTap(void){
 int howManyTaps(void){
 
 	if (detectTap()){
-		HAL_Delay(100); //TODO trying to delay 1ms
+		HAL_Delay(100); //TODO trying to delay 100ms
 		for(int i = 0; i < 10; i++){ //TODO now need to refresh window contents, and make sure old values that flagged as a tap are gone before checking for a second tap 
 			readAccelerometer();
-			HAL_Delay(20); // 
+			HAL_Delay(20); // TODO determine this delay
 		}
-		for(int i = 0; i < 20; i++){ //TODO ok so with a delay of 200ms and 20 checks, a double tap must be detected within 2ish seconds
+		for(int i = 0; i < 20; i++){ //TODO ok so with a delay of 200ms and 20 checks, a double tap must be detected within 4ish seconds
 			readAccelerometer();
 			if(detectTap()){
 				return 2;

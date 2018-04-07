@@ -77,7 +77,7 @@ int counter = 0;
 
 
 int audioBufferIndex = 0;
-int audioBuffer[AUDIO_BUFFER_SIZE] = {0};
+uint32_t audioBuffer[AUDIO_BUFFER_SIZE] = {0};
 
 extern 	float filteredAccX[100];
 extern 	float filteredAccY[100];
@@ -178,6 +178,7 @@ int tapCount = 0;
 					HAL_ADC_Stop_IT(&hadc1); //TODO can also deinit this
 					HAL_TIM_Base_Stop(&htim2);
 					HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET); //turn off recording LED
+					transmitFreakinHugeAudioArray(audioBuffer,AUDIO_BUFFER_SIZE);
 					State = STATE_RECIEVE_RESPONSE;
 				}
 				break;
