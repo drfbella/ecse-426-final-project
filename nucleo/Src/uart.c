@@ -21,22 +21,20 @@ void UART_Initialize(void)
 //  HAL_UART_MspInit(&uart_handle);
 
 	__HAL_RCC_USART1_CLK_ENABLE();
-  uart_handle.Instance = USART1;
-
+  
+	uart_handle.Instance = USART1;
   
 	// Initialize TX
 	uart_handle.Init.BaudRate = 115200;
 	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
 	uart_handle.Init.StopBits = UART_STOPBITS_1;
 	uart_handle.Init.Parity = UART_PARITY_NONE;
-	uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	uart_handle.Init.Mode = UART_MODE_TX_RX;
-	uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;
-	
-
-	
+	uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;	
 	if (HAL_UART_Init(&uart_handle) != HAL_OK)
 	{
+		printf("uart not initialized\n");
 		//Print statements for possible errors. Errors to be determined see main 347
 	}
 	
