@@ -3,4 +3,5 @@
 
 void UART_Initialize(void);
 void transmitRollAndPitch(float roll, float pitch);
+void receive(void);
 #endif 

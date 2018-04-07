@@ -137,7 +137,7 @@ void readAccelerometer(){
 					accZ = (float)Buffer[2];
 					calcPitch (accX, accY, accZ);
 					calcRoll (accX, accY, accZ);
-					printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
+	//				printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
 				
 					//This block is implementing a sliding window and storing fetched values
 				 for (int j = 0; j < windowSize -1; j++){

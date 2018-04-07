@@ -59,7 +59,7 @@ void transmit(){
   * @brief  Calls HAL_UART_Recieve to recieve data into rxBuffer in blocking mode using uart_handle and TIMEOUT. 
   * @retval None
   */
-void recieve(){
+void receive(){
 	if(HAL_OK != HAL_UART_Receive(&uart_handle, rxBuffer, RX_BUFFER_SIZE, TIMEOUT)){
 		    _Error_Handler(__FILE__, __LINE__);
 	}	

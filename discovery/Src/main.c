@@ -40,11 +40,13 @@
 #include "stm32f4xx_hal.h"
 #include "lis3dsh.h"
 #include "accelerometer.h"
+#include "uart.h"
 
 #define STATE_DETECT_TAP 0
 #define STATE_RECORD_AUDIO 1
 #define STATE_READ_ACCEL 2
 #define STATE_RECIEVE_RESPONSE 3
+#define AUDIO_BUFFER_SIZE 16000
 /* Private variables ---------------------------------------------------------*/
 
 LIS3DSH_InitTypeDef Acc_instance;
@@ -72,8 +74,8 @@ int N = 0;
 int counter = 0;
 
 
-int audioBufferIndex = -1;
-int audioBuffer[10000] = {0};
+int audioBufferIndex = 0;
+int audioBuffer[AUDIO_BUFFER_SIZE] = {0};
 extern int z;
 extern 	float filteredAccX[100];
 extern 	float filteredAccY[100];
@@ -108,105 +110,102 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 	// and example of sending a data through UART, but you need to configure the UART block:
 	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
 	//UART_Initialize();
-
+	UART_Initialize();
   while (1)
-  {
-		switch (State){	
+ {	
+	/*	switch (State){	
 		case STATE_DETECT_TAP:
 			//State 0: read acc and detect tap	
-		readAccelerometer();
-		if (counter > 200){
-			if (detectTap()){
-        oneSecondCounter = 0;
-        while(oneSecondCounter < 50){
-          readAccelerometer();
-        }
-        oneSecondCounter = 0;
-        int tap2 = 0;
-        while(oneSecondCounter < 1000){
-          if(detectTap()){
+			readAccelerometer();
+			if (counter > 200){
+				if (detectTap()){
+					printf("tap detected \n");
+					oneSecondCounter = 0;
+					while(oneSecondCounter < 200){
+						readAccelerometer();
+					}
+					oneSecondCounter = 0;
+					int tap2 = 0;
+					while(oneSecondCounter < 200){
+						if(detectTap()){
             State = STATE_READ_ACCEL;
             tap2 = 1;
             break;            
           }
         }
 				if(tap2 == 0){
-          newValueReady = 0;
-          oneSecondCounter = 0;
-          audioBufferIndex = 0;
-          HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
-          HAL_TIM_Base_Start(&htim2);
-          HAL_ADC_Start_IT(&hadc1);
-          State = STATE_RECORD_AUDIO;
-        }
+					newValueReady = 0;
+					oneSecondCounter = 0;
+					audioBufferIndex = 0;
+					HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
+					HAL_TIM_Base_Start(&htim2);
+					HAL_ADC_Start_IT(&hadc1);
+					State = STATE_RECORD_AUDIO;
+				}
 			}
-
 		}
-
 		break;
-		
-		case STATE_RECORD_AUDIO:
+	case STATE_RECORD_AUDIO:
 			// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer
 			// Could potentially be moved to a function
 		
 		//Trigger Electret Microphone Breakout, might be as simple as connecting the adc pin with the microphone
 		//Transmit uart
-//		HAL_ADC_Start(&hadc1); 	
+		//		HAL_ADC_Start(&hadc1); 	
 		//will put in bytes later
-		  if(newValueReady){
-        audioBufferIndex++;
-        //audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
-        newValueReady = 0;
-        printf("audio %i \n", audioBuffer[audioBufferIndex]);
-      }
-      if(oneSecondCounter > 1000){
-        HAL_ADC_Stop_IT(&hadc1); 
-        HAL_TIM_Base_Stop(&htim2);
-        HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET);
-        State = STATE_RECIEVE_RESPONSE;
-      }
+		if(newValueReady){
+			if(audioBufferIndex > AUDIO_BUFFER_SIZE){
+				printf("AUDIO BUFFER OVERLOW \n");
+			}else{
+				audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
+				newValueReady = 0;
+				printf("audio %i \n", audioBuffer[audioBufferIndex]);
+			}
+			audioBufferIndex++;
+
+		}
+    if(oneSecondCounter > 1000){
+			
+			HAL_ADC_Stop_IT(&hadc1); 
+			HAL_TIM_Base_Stop(&htim2);
+			HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET);
+      State = STATE_RECIEVE_RESPONSE;
+		}
 		break;
-		
-		case STATE_READ_ACCEL:
+	case STATE_READ_ACCEL:
 			//state 2, led red on data transfer
 		  //record the pitch and roll values for 10s, calculate pitch and roll
 
 		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
-			accForTenSec();
-			for (int h = 0; h<=z; h++){
-				pitch[h] = calcPitch(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
-				roll[h] = calcRoll(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
-			}
+		accForTenSec();
+		for (int h = 0; h<=z; h++){
+			pitch[h] = calcPitch(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
+			roll[h] = calcRoll(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
+		}
 			//transmit(pitch);
 			//transmit(roll);
-			HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);
 			
-			State = STATE_DETECT_TAP;
+		State = STATE_DETECT_TAP;
 		break;
 		
-		case STATE_RECIEVE_RESPONSE:
+	case STATE_RECIEVE_RESPONSE:
 			// wait till integer N arrives from nucleo board
 			// Blink LED2 blue N times
-		//	N = recieve();
-		
-			for (int i = 0; i < N+1; i++){
+			//	N = recieve();
+		for (int i = 0; i < N+1; i++){
 			HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
-				
 				for (int k = 0; k<300; k++){
 				int delaying = 0;
 				delaying ++;				
-				}			
-			HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
-				
-			}
-      
-
-			
-			State = STATE_DETECT_TAP;
-		break;
-		
-				
-		}	
+			}			
+			HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);		
+		}
+		State = STATE_DETECT_TAP;
+		break;		
+		}*/
+		//transmitRollAndPitch(251.7,96);		
+		receive();
   }
 }
 
@@ -339,7 +338,7 @@ static void MX_TIM2_Init(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 10;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 10;
+  htim2.Init.Period = 1200;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
