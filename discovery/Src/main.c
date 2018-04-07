@@ -149,11 +149,10 @@ int tapCount = 0;
 							State = STATE_RECORD_AUDIO;
 							HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);				
 							break;
-						case 0:
-							HAL_Delay(200);
-							break;
 					}
 				}
+				HAL_Delay(200);
+
 				break;
 				case STATE_RECORD_AUDIO:
 				// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer

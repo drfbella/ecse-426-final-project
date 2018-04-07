@@ -168,6 +168,7 @@ void transmitFreakinHugeAudioArray(uint32_t audio[], int size){
 int receiveResponseInt(void){
 	if(HAL_OK != HAL_UART_Receive(&uart_handle, rxBuffer, 1, TIMEOUT)){
 		    printf("There was no answer. There was much sadness \n");
+		return 0;
 		
 	}
 	else{
