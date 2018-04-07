@@ -52,6 +52,7 @@
 LIS3DSH_InitTypeDef Acc_instance;
 ADC_HandleTypeDef hadc1;
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -63,6 +64,7 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
+static void MX_TIM3_Init(void);
 
 
 //int recieve();
@@ -93,6 +95,22 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
   newValueReady = 1;
 }
 
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+				//state 2, led red on data transfer
+		  //record the pitch and roll values for 10s, calculate pitch and roll
+		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
+		accForTenSec();
+		for (int h = 0; h<=z; h++){
+			pitch[h] = calcPitch(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
+			roll[h] = calcRoll(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
+		}
+			//transmit(pitch);
+			//transmit(roll);
+		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);
+
+}
+
 int main(void)
 {
 
@@ -113,7 +131,7 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 	UART_Initialize();
   while (1)
  {	
-	/*	switch (State){	
+		switch (State){	
 		case STATE_DETECT_TAP:
 			//State 0: read acc and detect tap	
 			readAccelerometer();
@@ -173,20 +191,9 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 		}
 		break;
 	case STATE_READ_ACCEL:
-			//state 2, led red on data transfer
-		  //record the pitch and roll values for 10s, calculate pitch and roll
-
-		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);
-		accForTenSec();
-		for (int h = 0; h<=z; h++){
-			pitch[h] = calcPitch(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
-			roll[h] = calcRoll(filteredAccX[h], filteredAccY[h], filteredAccZ[h]);
-		}
-			//transmit(pitch);
-			//transmit(roll);
-		HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);
-			
-		State = STATE_DETECT_TAP;
+		if(tenSecDone){
+			State = STATE_DETECT_TAP;
+		]
 		break;
 		
 	case STATE_RECIEVE_RESPONSE:
@@ -203,9 +210,9 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 		}
 		State = STATE_DETECT_TAP;
 		break;		
-		}*/
-		//transmitRollAndPitch(251.7,96);		
-		receive();
+		}
+//		transmitRollAndPitch(0,0);		
+		//receive();
   }
 }
 
@@ -336,9 +343,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 10;
+  htim2.Init.Prescaler = 100;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 1200;
+  htim2.Init.Period = 19000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
@@ -359,6 +366,39 @@ static void MX_TIM2_Init(void)
   }
 
 }
+
+/* TIM init function */
+static void MX_TIM3_Init(void)
+{
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 10;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 1200;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+}
+
 static void MX_GPIO_Init(void)
 {
 

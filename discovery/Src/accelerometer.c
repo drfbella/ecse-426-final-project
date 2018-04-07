@@ -85,9 +85,6 @@ void accelerometer_init(void) {
 }
 
 void accForTenSec(void){
-	MyFlag = 0;
-
-	while (MyFlag <= 1000){
 		LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
 				//The first four bits denote if we have new data on all XYZ axes, 
 		   	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
@@ -104,8 +101,6 @@ void accForTenSec(void){
 					
 					z++;
 				}
-	}
-
 }
 
 float calcPitch(float x, float y, float z){

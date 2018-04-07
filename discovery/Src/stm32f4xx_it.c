@@ -37,7 +37,7 @@
 
 /* USER CODE BEGIN 0 */
 extern uint8_t MyFlag;
-extern TIM_HandleTypeDef timer_uart;
+extern TIM_HandleTypeDef htim3;
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef uart_handle;
 /* USER CODE END 0 */
@@ -94,9 +94,9 @@ void ADC_IRQHandler(void)
   * @brief  This function handles TIM3 Handler.
   */
 
-/*void TIM3_IRQHandler(void)
+void TIM3_IRQHandler(void)
 {
-	HAL_TIM_IRQHandler(&timer_uart);	
-}*/
+	HAL_TIM_IRQHandler(&htim3);	
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
