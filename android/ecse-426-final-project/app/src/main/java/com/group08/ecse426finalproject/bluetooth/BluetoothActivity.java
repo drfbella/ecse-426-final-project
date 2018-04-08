@@ -116,25 +116,6 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
         super.onDestroy();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        // Check which request we're responding to
-        if (requestCode == REQUEST_ENABLE_BT) {
-            // Make sure the request was successful
-            if (resultCode == RESULT_OK) {
-                BluetoothUtils.toast(getApplicationContext(), "Thank you for turning on Bluetooth");
-            }
-            else if (resultCode == RESULT_CANCELED) {
-                BluetoothUtils.toast(getApplicationContext(), "Please turn on bluetooth.");
-            }
-        }
-        else if (requestCode == BTLE_SERVICES){
-
-        }
-    }
-
-    //checks if BLE is supported in the current device
     public void checkBTCompatibility() {
         if
                 (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE
@@ -328,6 +309,32 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
 
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //checks if BLE is supported in the current device
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        // Check which request we're responding to
+        if (requestCode == REQUEST_ENABLE_BT) {
+            // Make sure the request was successful
+            if (resultCode == RESULT_OK) {
+                BluetoothUtils.toast(getApplicationContext(), "Thank you for turning on Bluetooth");
+            }
+            else if (resultCode == RESULT_CANCELED) {
+                BluetoothUtils.toast(getApplicationContext(), "Please turn on bluetooth.");
+            }
+        }
+        else if (requestCode == BTLE_SERVICES){
+//            pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
+//            rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
+//            speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
+            if(speechData == null){
+                Log.d(TAG,"Speech Data is null");
+            }
+            Log.d(TAG, "onActivityResult for BluetoothActivity");
         }
     }
 }
