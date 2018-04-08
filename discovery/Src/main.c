@@ -101,7 +101,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	  //record the pitch and roll values for 10s, calculate pitch and roll
 		if(storeAccelValues() == -1){
 			readAccelForTenDone = 1;
+			HAL_TIM_Base_Stop_IT(&htim3);
 		}
+//		printf("timer interrupt interrupting\n");
 }
 
 
@@ -130,7 +132,7 @@ int tapCount = 0;
 			//State 0: read acc and detect tap	
 			readAccelerometer();
 			counter++; //This counter is gonna count to about 200 until I care about the value of the accelerometer, to allow it to stabilize
-			if(counter > 200){	
+			if(counter > 100){	
 				tapCount = howManyTaps();
 					switch (tapCount){
 						case 2:
@@ -151,7 +153,7 @@ int tapCount = 0;
 							break;
 					}
 				}
-				HAL_Delay(200);
+				HAL_Delay(10);
 
 				break;
 				case STATE_RECORD_AUDIO:
@@ -183,10 +185,12 @@ int tapCount = 0;
 				break;
 
 				case STATE_READ_ACCEL:
+				
 				if(readAccelForTenDone){
+						printf("CHECKING \n");
 					//TODO transmit data
 					counter = 0; //TODO is this necessary?
-					HAL_TIM_Base_Stop_IT(&htim3);
+					
 					State = STATE_DETECT_TAP; //return to state detecting tap
 					HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);// turn off accel read LED
 					transmitFreakinHugeRollAndPitchArrays(storedRoll, storedPitch, ACCELERATION_BUFFER_SIZE);
@@ -198,16 +202,17 @@ int tapCount = 0;
 			// wait till integer N arrives from nucleo board
 			// Blink LED2 blue N times
 				HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);				
-				N = receiveResponseInt();
+				//N = receiveResponseInt();
+				N=3; //TODO FOR TEST
 				for (int i = 0; i < N+1; i++){
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);
 //					for (int k = 0; k<300; k++){
 //					int delaying = 0;
 //					delaying ++;				
 //					}			
-					HAL_Delay(500);//delay half a second - may need to adjust this
+					HAL_Delay(100);//delay half a second - may need to adjust this
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
-					HAL_Delay(500);//delay half a second - may need to adjust this					
+					HAL_Delay(100);//delay half a second - may need to adjust this					
 				}
 				counter = 0;
 				State = STATE_DETECT_TAP;
@@ -348,9 +353,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 100;
+  htim2.Init.Prescaler = 8399;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 19000;
+  htim2.Init.Period = 4;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
@@ -380,9 +385,9 @@ static void MX_TIM3_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 10;
+  htim3.Init.Prescaler = 8399;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1200;
+  htim3.Init.Period = 99;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
   {
@@ -402,6 +407,7 @@ static void MX_TIM3_Init(void)
      _Error_Handler(__FILE__, __LINE__);
   }
 	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+	HAL_NVIC_EnableIRQ(TIM3_IRQn);
 }
 
 static void MX_GPIO_Init(void)

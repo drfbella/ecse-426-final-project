@@ -91,22 +91,22 @@ void resetAccelIndex(void){
 
 int storeAccelValues(void){
 	if(accelIndex >= ACCELERATION_BUFFER_SIZE ){
-		printf("ACCELERATION BUFFER FULL OH NOS");
+	//	printf("ACCELERATION BUFFER FULL OH NOS\n");
 		return -1;
 	}
-	LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
+//	LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
 	//The first four bits denote if we have new data on all XYZ axes, 
 	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
-	if ((status & 0x0F) != 0x00){
+//	if ((status & 0x0F) != 0x00){
 		LIS3DSH_ReadACC(&Buffer[0]);
 		FIR_C((float)Buffer[0], &filteredAccX[accelIndex]);
 		FIR_C((float)Buffer[1], &filteredAccY[accelIndex]);
 		FIR_C((float)Buffer[2], &filteredAccZ[accelIndex]);
 
-		storedPitch[accelIndex] = calcPitch(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
-		storedRoll[accelIndex] = calcRoll(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
+//		storedPitch[accelIndex] = calcPitch(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
+//		storedRoll[accelIndex] = calcRoll(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
 		accelIndex++;
-	}
+//	}
 	return 0;
 }
 
@@ -197,7 +197,7 @@ int howManyTaps(void){
 			if(detectTap()){
 				return 2;
         }
-			HAL_Delay(200);//new reading every 200ms, TODO select
+			HAL_Delay(20);//new reading every 200ms, TODO select
       }
 		return 1;
 		}
