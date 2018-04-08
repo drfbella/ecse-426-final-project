@@ -39,11 +39,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     /*
         ECSE-426-PROJECT SPECIFIC UUIDs
      */
-    private String audioCharacteristicUUID = "E893D43D-C166-4E77-9ECF-6F6F81D76006"; // TODO: configure audio characteristic UUID
-    private String audioServiceUUID = "7E12324C-4323-403F-AD58-85ED7D218CAC"; // TODO: configure audio service UUID
-    private String accelerometerPitchUUID = "hi"; //TODO: configure accelerometer characteristic for pitch UUID
-    private String accelerometerRollUUID = "yo"; //TODO: configure accelerometer characteristic for roll UUID
-    private String accelerometerServiceUUID = "hii"; //TODO: configure accelerometer service UUID
+    public static final  String audioCharacteristicUUID = "E893D43D-C166-4E77-9ECF-6F6F81D76006"; // TODO: configure audio characteristic UUID
+    public static final  String audioServiceUUID = "7E12324C-4323-403F-AD58-85ED7D218CAC"; // TODO: configure audio service UUID
+    public static final  String accelerometerPitchUUID = "hi"; //TODO: configure accelerometer characteristic for pitch UUID
+    public static final  String accelerometerRollUUID = "yo"; //TODO: configure accelerometer characteristic for roll UUID
+    public static final  String accelerometerServiceUUID = "hii"; //TODO: configure accelerometer service UUID
 
     private byte[] pitchData = new byte[]{}; // TODO: Update accelerometer/speech data
     private byte[] rollData = new byte[]{};
@@ -191,6 +191,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
                 Log.d(TAG, "Wrote Hello my friend to " + characteristic.getUuid().toString());
             }
+
 //            Dialog_BTLE_Characteristic dialog_btle_characteristic = new Dialog_BTLE_Characteristic();
 //
 //            dialog_btle_characteristic.setTitle(uuid);
@@ -347,6 +348,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         i.putExtra(ROLL_DATA_NAME, rollData);
         i.putExtra(SPEECH_DATA_NAME, speechData);
         setResult(BluetoothActivity.BTLE_SERVICES, i);
+
+        Log.d(TAG, "the extra data is " + Service_BTLE_GATT.EXTRA_DATA);
+
+        Log.d(TAG, "the extra data from receiver is " + mGattUpdateReceiver.data);
+
         finish();
         super.onBackPressed();
     }

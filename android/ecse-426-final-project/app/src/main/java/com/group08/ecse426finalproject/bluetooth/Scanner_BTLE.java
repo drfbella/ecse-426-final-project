@@ -11,6 +11,8 @@ import android.os.Handler;
 
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
+import java.util.UUID;
+
 @TargetApi(21)
 
 public class Scanner_BTLE {
@@ -81,6 +83,14 @@ public class Scanner_BTLE {
 
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
+            /**
+             * If you want to scan for only specific types of peripherals,
+             * you can instead call startLeScan(UUID[], BluetoothAdapter.LeScanCallback),
+             * providing an array of UUID objects that
+             * specify the GATT services your app supports.
+             * source: https://developer.android.com/guide/topics/connectivity/bluetooth-le.html
+             */
+//            mBluetoothAdapter.startLeScan(new UUID[], mLeScanCallback);
 
             //api 18-20
 //            if (Build.VERSION.SDK_INT < 21) {

@@ -3,6 +3,7 @@ package com.group08.ecse426finalproject.bluetooth;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
@@ -16,6 +17,8 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         this.activity = activity;
     }
 
+    public String data;
+    public String uuid;
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
@@ -40,8 +43,10 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         }
         else if (Service_BTLE_GATT.ACTION_DATA_AVAILABLE.equals(action)) {
 
-//            String uuid = intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID);
-//            String data = intent.getStringExtra(Service_BTLE_GATT.EXTRA_DATA);
+             uuid = intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID); // TODO: this stores the values to the appropriate characterstics...
+             data = intent.getStringExtra(Service_BTLE_GATT.EXTRA_DATA);
+            Log.d("DEBUG CHECK ONRECEIVE", data);
+//            speechData = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA); //TODO: store in byte array?
 
             activity.updateCharacteristic();
         }
