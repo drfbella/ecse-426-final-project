@@ -84,25 +84,13 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                 Log.e(TAG, "Unable to initialize Bluetooth");
                 finish();
             }
-
             mBTLE_Service.connect(address);
-
-            // Automatically connects to the device upon successful start-up initialization. //TODO: review
-//            mBTLeService.connect(mBTLeDeviceAddress);
-
-//            mBluetoothGatt = mBTLeService.getmBluetoothGatt();
-//            mGattUpdateReceiver.setBluetoothGatt(mBluetoothGatt);
-//            mGattUpdateReceiver.setBTLeService(mBTLeService);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBTLE_Service = null;
             mBTLE_Service_Bound = false;
-
-//            mBluetoothGatt = null;
-//            mGattUpdateReceiver.setBluetoothGatt(null);
-//            mGattUpdateReceiver.setBTLeService(null);
         }
     };
 
@@ -191,21 +179,25 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         BluetoothGattCharacteristic characteristic = characteristics_HashMapList.get(
                 services_ArrayList.get(groupPosition).getUuid().toString())
                 .get(childPosition);
-
         // TODO: implement fire base connection here, for read and write
 
         // write-able property
         if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
             String uuid = characteristic.getUuid().toString();
+
             Log.d(TAG, "Clicked on a characteristic " + uuid);
-
-            Dialog_BTLE_Characteristic dialog_btle_characteristic = new Dialog_BTLE_Characteristic();
-
-            dialog_btle_characteristic.setTitle(uuid);
-            dialog_btle_characteristic.setService(mBTLE_Service);
-            dialog_btle_characteristic.setCharacteristic(characteristic);
-
-            dialog_btle_characteristic.show(getFragmentManager(), "Dialog_BTLE_Characteristic");
+            if (mBTLE_Service != null) {
+                characteristic.setValue("Hello my friend");
+                mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
+                Log.d(TAG, "Wrote Hello my friend to " + characteristic.getUuid().toString());
+            }
+//            Dialog_BTLE_Characteristic dialog_btle_characteristic = new Dialog_BTLE_Characteristic();
+//
+//            dialog_btle_characteristic.setTitle(uuid);
+//            dialog_btle_characteristic.setService(mBTLE_Service);
+//            dialog_btle_characteristic.setCharacteristic(characteristic);
+//
+//            dialog_btle_characteristic.show(getFragmentManager(), "Dialog_BTLE_Characteristic");
 //            speechData = characteristic.getValue();
         } else if (BluetoothUtils.hasReadProperty(characteristic.getProperties()) != 0) {
             if (mBTLE_Service != null) {
@@ -257,26 +249,6 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         expandableListAdapter.notifyDataSetChanged();
     }
 
-//    /**
-//     *  Used to obtain a specific characteristic based on String input...
-//     * @param uuid  of the specific characteristic to be read/written
-//     * @return BluetoothGattCharacteristic used to read or manipulate
-//     */
-//    public BluetoothGattCharacteristic getCharacteristic(UUID uuid) {
-//        List<BluetoothGattService> servicesList = mBTLE_Service.getSupportedGattServices();
-//        for(BluetoothGattService service : servicesList) {
-//            List<BluetoothGattCharacteristic> characteristicsList = service.getCharacteristics();
-//            for(BluetoothGattCharacteristic c : characteristicsList){
-//                if(c.getUuid() == uuid){
-//                    Log.d(TAG, "UUID: " + uuid.toString() + " found!");
-//                    return c;
-//                }
-//            }
-//        }
-//        Log.d(TAG, "No UUID found for " + uuid.toString());
-//        return null;
-//    }
-
     /**
      *  More generic way of accessing data from gatt
      * @param serviceStringUUID String of UUID of the service
@@ -287,7 +259,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         BluetoothGatt mGatt = mBTLE_Service.getGatt();
         BluetoothGattService mService = mGatt.getService(UUID.fromString(serviceStringUUID));
         if(mService == null) {
-            Log.d(TAG, "coudln't find service");
+            Log.d(TAG, "couldn't find service");
             return null;
         }
         BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(characteristicStringUUID));
@@ -298,6 +270,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         Log.d(TAG, "characteristic found was : " + mCharacteristic.getUuid().toString());
         return mCharacteristic.getValue();
     }
+
     public byte[] readAudio(){
         BluetoothGatt mGatt = mBTLE_Service.getGatt();
         BluetoothGattService mAudioService = mGatt.getService(UUID.fromString(audioServiceUUID));

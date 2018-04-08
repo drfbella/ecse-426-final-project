@@ -126,17 +126,27 @@ public class Service_BTLE_GATT extends Service {
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
-//        @Override
-//        public void onCharacteristicWrite(BluetoothGatt gatt,
-//                                          BluetoothGattCharacteristic characteristic, int status) {
-//
-//        }
+        /**
+         * Called when type gatt.writeCharacteristic(characteristic);
+         * @param gatt
+         * @param characteristic
+         * @param status
+         */
+        @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt,
+                                          BluetoothGattCharacteristic characteristic, int status) {
+            if(status == BluetoothGatt.GATT_SUCCESS){
+                broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
+            }
+        }
     };
 
     private void broadcastUpdate(final String action) {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
     }
+
+    // Reads data...
 
     private void broadcastUpdate(final String action, final BluetoothGattCharacteristic characteristic) {
 
