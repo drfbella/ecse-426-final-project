@@ -3,7 +3,6 @@ package com.group08.ecse426finalproject;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -67,8 +66,6 @@ public class MainActivity extends AppCompatActivity {
                 pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
                 rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
                 speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
-                Log.d(TAG, "speechData value is: " + speechData);
-                Log.d(TAG, "onActivityResult in MainActivity");
             }
         }
     }

@@ -10,5 +10,4 @@
     <string name="bluetooth">Bluetooth</string>
     <string name="speech">Speech</string>
     <string name="accelerometer">Accelerometer</string>
-    <string name="store_values">Store Values</string>
 </resources>
