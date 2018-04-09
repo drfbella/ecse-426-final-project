@@ -20,35 +20,29 @@ uint8_t rxBuffer[RX_BUFFER_SIZE];
 void UART_Initialize(void)
 {
 	
-	__HAL_RCC_USART2_CLK_ENABLE();
-	
-	// Initialize
-	uart_handle.Instance = USART2;
-
-	uart_handle.Init.BaudRate = 115200;
-	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
-	uart_handle.Init.StopBits = UART_STOPBITS_1;
-	uart_handle.Init.Parity = UART_PARITY_NONE;
-	uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	uart_handle.Init.Mode = UART_MODE_TX_RX;
-	uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;
-	
-	
-	if (HAL_UART_Init(&uart_handle) != HAL_OK)
-	{
-		//Print statements for possible errors. Errors to be determined see main 347
-	}
-
-	HAL_NVIC_SetPriority(USART2_IRQn, 0, 1);
-  HAL_NVIC_EnableIRQ(USART2_IRQn);
+  uart_handle.Instance = UART5;
+  uart_handle.Init.BaudRate = 115200;
+  uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
+  uart_handle.Init.StopBits = UART_STOPBITS_1;
+  uart_handle.Init.Parity = UART_PARITY_NONE;
+  uart_handle.Init.Mode = UART_MODE_TX_RX;
+  uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&uart_handle) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
 }
 
 
 HAL_StatusTypeDef retTxTest = HAL_OK; 
 void transmitTest(){
-	int test = 456;
-	memcpy(txBuffer, &test, 4);
-  retTxTest = HAL_UART_Transmit(&uart_handle, txBuffer, 4, TIMEOUT);
+	txBuffer[0] = 'F';
+	txBuffer[1] = 'U';
+	txBuffer[2] = 'C';
+	txBuffer[3] = 'K';
+	
+  retTxTest = HAL_UART_Transmit(&uart_handle, (uint8_t*)txBuffer, 4, TIMEOUT);
 	if(HAL_OK != retTxTest){
 		printf("TX TEST FAILED \n");
 		if(HAL_TIMEOUT == retTxTest){
