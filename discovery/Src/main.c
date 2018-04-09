@@ -126,7 +126,7 @@ int tapCount = 0;
 
 	UART_Initialize();
   while (1)
- {	/*
+ {	
 		switch (State){	
 			case STATE_DETECT_TAP:
 			//State 0: read acc and detect tap	
@@ -170,7 +170,7 @@ int tapCount = 0;
 					}else{
 						audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
 						newValueReady = 0;
-						printf("audio %i \n", audioBuffer[audioBufferIndex]);
+						//printf("audio %i \n", audioBuffer[audioBufferIndex]);
 					}
 					audioBufferIndex++;
 				}
@@ -205,28 +205,26 @@ int tapCount = 0;
 				//N = receiveResponseInt();
 				N=3; //TODO FOR TEST
 				for (int i = 0; i < N+1; i++){
-					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);
-//					for (int k = 0; k<300; k++){
-//					int delaying = 0;
-//					delaying ++;				
-//					}			
-					HAL_Delay(100);//delay half a second - may need to adjust this
+					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);		
+					HAL_Delay(1000);//delay half a second - may need to adjust this
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
-					HAL_Delay(100);//delay half a second - may need to adjust this					
+					HAL_Delay(500);//delay half a second - may need to adjust this					
 				}
 				counter = 0;
 				State = STATE_DETECT_TAP;
 				break;		
-		}*/
+		}
 		
 		//TODO, for testing, delete later
-		transmitTest();
-			HAL_Delay(20);
+//		transmitTest();
+//			HAL_Delay(20);
 
 	//	receiveTest();
 	
 	}
 }
+/** System Clock Configuration
+*/
 void SystemClock_Config(void)
 {
 
@@ -247,8 +245,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 50;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLN = 168;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -261,10 +259,10 @@ void SystemClock_Config(void)
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
@@ -280,7 +278,6 @@ void SystemClock_Config(void)
   /* SysTick_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
-
 
 /** Configure pins as 
         * Analog 
