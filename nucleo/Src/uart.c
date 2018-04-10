@@ -7,10 +7,7 @@
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
 #define TX_BUFFER_SIZE 1 //size of buffer used for transmitting
-#define RX_BUFFER_SIZE 32000 //size of buffer used for recieving
-
-
-	//pin tx A2, rx A3 on stm32f407
+#define RX_BUFFER_SIZE 32001 //size of buffer used for recieving
 
 UART_HandleTypeDef uart_handle;
 
@@ -54,7 +51,7 @@ void UART_Initialize(void)
 void transmit(uint8_t response){
 	txBuffer[0] = response;
 	while(HAL_OK != HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT)){
-					//TODO error
+					printf("error transmitting");
 	}
 }
 
@@ -78,8 +75,8 @@ uint8_t recieveMessage(){
 			//update audio
 			//send BLE
 			// response BLE
-			int decoded = 3;
-			transmit(decoded);
+			transmit(3);
+
 		}else if(rxBuffer[0] == TRANSMISSION_TYPE_ROLLPITCH){
 			//update roll and ptch
 			//transmit BLE
