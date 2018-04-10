@@ -64,7 +64,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
-static void MX_TIM3_Init(void);
 
 
 //int recieve();
@@ -76,6 +75,9 @@ int N = 0;
 int counter = 0;
 
 
+int readAccelForTenDone = 0;
+int readAudioForOneDone = 0;
+
 int audioBufferIndex = 0;
 uint32_t audioBuffer[AUDIO_BUFFER_SIZE] = {0};
 
@@ -83,17 +85,20 @@ extern 	float filteredAccX[100];
 extern 	float filteredAccY[100];
 extern 	float filteredAccZ[100];
 
-int newValueReady = 0;
-int tenSecondsCounter = 0;
-int readAccelForTenDone = 0;
-volatile uint32_t oneSecondCounter = 0;
-
 extern float storedRoll[];
 extern float storedPitch[];
 
 /*The handler for the ADC automatically calls callback. Should send the value to the filter, calculate min/max, rms*/
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
-  newValueReady = 1;
+	audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
+	//printf("audio %i \n", audioBuffer[audioBufferIndex]);
+	audioBufferIndex++;
+	if(audioBufferIndex >= AUDIO_BUFFER_SIZE){
+		HAL_ADC_Stop_IT(&hadc1); 
+		HAL_TIM_Base_Stop(&htim2);
+		//TODO can also deinit this		
+		readAudioForOneDone = 1;
+	}
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
@@ -108,19 +113,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 		case STATE_DETECT_TAP:
 			//TODO checkForTaps();
 			break;
-	}		
-	
-	
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-	  //record the pitch and roll values for 10s, calculate pitch and roll
-//		if(storeAccelValues() == -1){
-//			readAccelForTenDone = 1;
-//			HAL_TIM_Base_Stop_IT(&htim3);
-//		}
-//		printf("timer interrupt interrupting\n");
+	}			
 }
 
 
@@ -135,9 +128,6 @@ accelerometer_init();
 MX_ADC1_Init();
 MX_TIM2_Init();
 HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
-
-MX_TIM3_Init();
-HAL_TIM_Base_Init(&htim3); //Starts the timer base generation for timer 3 -->100Hz 
   
 int tapCount = 0;
 
@@ -160,8 +150,7 @@ int tapCount = 0;
 							HAL_TIM_Base_Start_IT(&htim3);
    		     break;
 						case 1:
-							newValueReady = 0;
-							oneSecondCounter = 0;
+							readAudioForOneDone = 0;
 							audioBufferIndex = 0;
 							HAL_TIM_Base_Start(&htim2);
 							HAL_ADC_Start_IT(&hadc1);
@@ -175,26 +164,7 @@ int tapCount = 0;
 				break;
 				case STATE_RECORD_AUDIO:
 				// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer
-				// Could potentially be moved to a function
-		
-				//Trigger Electret Microphone Breakout, might be as simple as connecting the adc pin with the microphone
-				//Transmit uart
-				//HAL_ADC_Start(&hadc1); 	
-				//will put in bytes later
-				if(newValueReady){
-					if(audioBufferIndex > AUDIO_BUFFER_SIZE){
-						printf("AUDIO BUFFER OVERLOW \n");
-					}else{
-						audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
-						newValueReady = 0;
-						//printf("audio %i \n", audioBuffer[audioBufferIndex]);
-					}
-					audioBufferIndex++;
-				}
-				//TODO better way to keep trach of time?
-				if(oneSecondCounter > 1000){// 1 second  has elapsed			
-					HAL_ADC_Stop_IT(&hadc1); //TODO can also deinit this
-					HAL_TIM_Base_Stop(&htim2);
+				if(readAudioForOneDone){// 1 second  has elapsed			
 					HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET); //turn off recording LED
 					transmitFreakinHugeAudioArray(audioBuffer,AUDIO_BUFFER_SIZE);
 					State = STATE_RECIEVE_RESPONSE;
@@ -202,12 +172,9 @@ int tapCount = 0;
 				break;
 
 				case STATE_READ_ACCEL:
-				
 				if(readAccelForTenDone){
-						printf("CHECKING \n");
-					//TODO transmit data
-					counter = 0; //TODO is this necessary?
-					
+					printf("CHECKING \n");
+					counter = 0; //TODO is this necessary?	
 					State = STATE_DETECT_TAP; //return to state detecting tap
 					HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);// turn off accel read LED
 					transmitFreakinHugeRollAndPitchArrays(storedRoll, storedPitch, ACCELERATION_BUFFER_SIZE);
@@ -215,15 +182,12 @@ int tapCount = 0;
 				break;
 		
 				case STATE_RECIEVE_RESPONSE:
-					//TODO finish this
-			// wait till integer N arrives from nucleo board
-			// Blink LED2 blue N times
-				HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);				
+				// wait till integer N arrives from nucleo board
+				// Blink LED2 blue N times
 				N = receiveResponseInt();
-				//N=3; //TODO FOR TEST
 				for (int i = 0; i < N; i++){
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);		
-					HAL_Delay(1000);//delay half a second - may need to adjust this
+					HAL_Delay(500);//delay half a second - may need to adjust this
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
 					HAL_Delay(500);//delay half a second - may need to adjust this					
 				}
@@ -234,9 +198,8 @@ int tapCount = 0;
 		
 		//TODO, for testing, delete later
 //		transmitTest();
-//			HAL_Delay(20);
-
-	//	receiveTest();
+//		HAL_Delay(20);
+//		receiveTest();
 	
 	}
 }
@@ -366,9 +329,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 8399;
+  htim2.Init.Prescaler = 1051;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 4;
+  htim2.Init.Period = 11;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
@@ -390,38 +353,6 @@ static void MX_TIM2_Init(void)
 
 }
 
-/* TIM init function */
-static void MX_TIM3_Init(void)
-{
-
-  TIM_ClockConfigTypeDef sClockSourceConfig;
-  TIM_MasterConfigTypeDef sMasterConfig;
-
-  htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 8399;
-  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 99;
-  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
-  {
-     _Error_Handler(__FILE__, __LINE__);
-  }
-
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
-  {
-     _Error_Handler(__FILE__, __LINE__);
-  }
-
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
-  {
-     _Error_Handler(__FILE__, __LINE__);
-  }
-	HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
-	HAL_NVIC_EnableIRQ(TIM3_IRQn);
-}
 
 static void MX_GPIO_Init(void)
 {

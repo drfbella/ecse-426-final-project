@@ -10,7 +10,6 @@
 uint8_t status;
 float Buffer[3];
 float accX, accY, accZ;
-uint32_t MyFlag = 0;
 float accValue[3] = {0,0,0};
 extern int counter;
 float accXWindow[10] = {0.0};

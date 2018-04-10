@@ -37,11 +37,9 @@
 
 /* USER CODE BEGIN 0 */
 extern uint8_t MyFlag;
-extern TIM_HandleTypeDef htim3;
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef uart_handle;
 /* USER CODE END 0 */
-extern volatile uint32_t oneSecondCounter;
 /* External variables --------------------------------------------------------*/
 
 /******************************************************************************/
@@ -59,8 +57,6 @@ void SysTick_Handler(void)
   HAL_IncTick();
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-	MyFlag ++;
-  oneSecondCounter++;
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -93,11 +89,6 @@ void ADC_IRQHandler(void)
 /**
   * @brief  This function handles TIM3 Handler.
   */
-
-void TIM3_IRQHandler(void)
-{
-	HAL_TIM_IRQHandler(&htim3);	
-}
 
 void EXTI0_IRQHandler(void)
 {
