@@ -6,8 +6,9 @@
 #define TIMEOUT 10000 //TODO what is a good timeout?
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
-#define TX_BUFFER_SIZE 10 //size of buffer used for transmitting
-#define RX_BUFFER_SIZE 10 //size of buffer used for recieving
+#define TX_BUFFER_SIZE 1 //size of buffer used for transmitting
+#define RX_BUFFER_SIZE 32000 //size of buffer used for recieving
+
 
 	//pin tx A2, rx A3 on stm32f407
 
@@ -46,43 +47,49 @@ void UART_Initialize(void)
 
 /**
   * @brief  Calls HAL_UART_Transmit to send an amount of data in blocking mode using uart_handle and TIMEOUT. 
-  * @param  pData: Pointer to data buffer
-  * @param  numByts: Amount of data to be sent in bytes
+  * @param  response: integer to be transmitted
   * @retval None
   */
-int transmitFail = 0;
-HAL_StatusTypeDef retTX = HAL_OK;
-void transmit(){
-	retTX = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT);
-	if(HAL_OK != retTX){
-		    
+
+void transmit(uint8_t response){
+	txBuffer[0] = response;
+	while(HAL_OK != HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT)){
+					//TODO error
 	}
 }
-HAL_StatusTypeDef ret = HAL_OK;
-int test = 0;
-void recieve(){
-	
-//	memset(rxBuffer, 0, RX_BUFFER_SIZE); //clear recieving buffer of junk
-	ret = HAL_UART_Receive(&uart_handle, (uint8_t*)rxBuffer, RX_BUFFER_SIZE, TIMEOUT);
-  if(HAL_OK != ret){
-    if(HAL_TIMEOUT == ret){
-      test ++;
-    }
-		    //todo error
-	}	
-	//format data somehow
-}
+
 
 void transmitTest(){
-	txBuffer[0] = 1;
-	txBuffer[6] = 4;
-	transmit();
+	transmit(55);
 }
 
-void recieveMessage(){
-//	memset(rxBuffer, 0, RX_BUFFER_SIZE); //clear transmitting buffer of junk, maybe unnecessary
-  recieve();
+
+/**
+  * @brief  Calls HAL_UART_Receive. If a message was received, checks if it is a roll/pitch or an audio message 
+  * @param  None
+  * @retval None
+  */
+uint8_t recieveMessage(){
+  if(HAL_OK != HAL_UART_Receive(&uart_handle, (uint8_t*)rxBuffer, RX_BUFFER_SIZE, TIMEOUT)){
+			//TODO error
+    }
+	else{
+		if(rxBuffer[0] == TRANSMISSION_TYPE_AUDIO){
+			//update audio
+			//send BLE
+			// response BLE
+			int decoded = 3;
+			transmit(decoded);
+		}else if(rxBuffer[0] == TRANSMISSION_TYPE_ROLLPITCH){
+			//update roll and ptch
+			//transmit BLE
+			transmit(UINT8_MAX);
+		}			
+	}
+	return rxBuffer[0];
 }
+
+
 
 //Do we need/want interrupts? try with polling first
 
