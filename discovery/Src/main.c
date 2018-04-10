@@ -73,7 +73,7 @@ const uint16_t led_pins[] = {LD4_Pin,LD5_Pin,LD6_Pin};
 int State = STATE_DETECT_TAP;
 int N = 0;
 int counter = 0;
-
+int tapCount = 0;
 
 int readAccelForTenDone = 0;
 int readAudioForOneDone = 0;
@@ -111,8 +111,13 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 			}
 			break;
 		case STATE_DETECT_TAP:
-			//TODO checkForTaps();
-			break;
+			readAccelerometer();
+			counter++; //This counter is gonna count to about 200 until I care about the value of the accelerometer, to allow it to stabilize
+			if(counter > 10){	
+				tapCount = howManyTaps();
+
+			}
+		break;
 	}			
 }
 
@@ -129,18 +134,14 @@ MX_ADC1_Init();
 MX_TIM2_Init();
 HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
   
-int tapCount = 0;
+
 
 	UART_Initialize();
   while (1)
  {	
 		switch (State){	
-			case STATE_DETECT_TAP:
+		case STATE_DETECT_TAP:
 			//State 0: read acc and detect tap	
-			readAccelerometer();
-			counter++; //This counter is gonna count to about 200 until I care about the value of the accelerometer, to allow it to stabilize
-			if(counter > 100){	
-				tapCount = howManyTaps();
 					switch (tapCount){
 						case 2:
 							resetAccelIndex();
@@ -148,18 +149,18 @@ int tapCount = 0;
 							State = STATE_READ_ACCEL;
 							HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);	
 							HAL_TIM_Base_Start_IT(&htim3);
-   		     break;
+							tapCount = 0;
+							break;
 						case 1:
 							readAudioForOneDone = 0;
 							audioBufferIndex = 0;
 							HAL_TIM_Base_Start(&htim2);
 							HAL_ADC_Start_IT(&hadc1);
 							State = STATE_RECORD_AUDIO;
-							HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);				
+							HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
+							tapCount = 0;							
 							break;
 					}
-				}
-				HAL_Delay(10);
 
 				break;
 				case STATE_RECORD_AUDIO:

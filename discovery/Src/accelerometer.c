@@ -5,7 +5,8 @@
 #include "main.h"
 
 #define PI 3.14159265358979323846
-
+#define THRESHOLD 25
+#define NUM_CHECKS_FOR_TWO_TAPS	20
 
 uint8_t status;
 float Buffer[3];
@@ -31,40 +32,8 @@ int accelIndex = 0;
 	float filteredAccZ[ACCELERATION_BUFFER_SIZE] = {0.0};
 	float storedRoll[ACCELERATION_BUFFER_SIZE] = {0};
 	float storedPitch[ACCELERATION_BUFFER_SIZE] = {0};
-/*
-void checkForTap(){
-	  int tap = 0;
-	//Accelerometer data changes most notably in the y axis upon tap
-	//	This could be optimized but say we detext a tap if there's a change of 25mm/s^2 
-	
-	float largeY = -50000.0;
-	float smallY = 50000.0;
-	
-	float previous = accYWindow[0];
-	float current = accYWindow[1];
-	float next = accYWindow[3];
-	
-	
 
-		for(int i = 1; i < windowSize+1; i++){
-		}
-	
-	for (int j = 0; j < windowSize; j++){
-			
-		//This way, I'm always storing the current value of acc
-		if (accYWindow[j] > largeY){
-			largeY = accYWindow[j];
-		}	
-		if (accYWindow[j] < smallY){
-			smallY = accYWindow[j];
-		}
-	}
-	if ((fabs(largeY) - fabs(smallY) > 25)){
-			printf("tap detected \n");
-			tap = 1;	
-	}
-	return tap;
-}	*/
+
 	
 void accelerometer_init(void) {
 
@@ -127,10 +96,7 @@ int storeAccelValues(void){
 	//	printf("ACCELERATION BUFFER FULL OH NOS\n");
 		return -1;
 	}
-//	LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
-	//The first four bits denote if we have new data on all XYZ axes, 
-	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
-//	if ((status & 0x0F) != 0x00){
+
 		LIS3DSH_ReadACC(&Buffer[0]);
 		FIR_C((float)Buffer[0], &filteredAccX[accelIndex]);
 		FIR_C((float)Buffer[1], &filteredAccY[accelIndex]);
@@ -139,7 +105,7 @@ int storeAccelValues(void){
 		storedPitch[accelIndex] = calcPitch(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
 		storedRoll[accelIndex] = calcRoll(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
 		accelIndex++;
-//	}
+
 	return 0;
 }
 
@@ -173,7 +139,7 @@ void readAccelerometer(){
 					accZ = (float)Buffer[2];
 //					calcPitch (accX, accY, accZ);
 //					calcRoll (accX, accY, accZ);
-	//				printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
+					printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
 				
 					//This block is implementing a sliding window and storing fetched values
 				 for (int j = 0; j < windowSize -1; j++){
@@ -217,25 +183,30 @@ int detectTap(void){
 	
 }
 
+int taps = 0;
+extern int counter;
+int hereWeGo = 0;
+
 int howManyTaps(void){
-
+	
 	if (detectTap()){
-		HAL_Delay(200); //TODO trying to delay 100ms
-		for(int i = 0; i < 10; i++){ //TODO now need to refresh window contents, and make sure old values that flagged as a tap are gone before checking for a second tap 
-			readAccelerometer();
-			HAL_Delay(100); // TODO determine this delay
+		taps++;
+		if(taps == 1){
+			counter = 0;
 		}
-		for(int i = 0; i < 20; i++){ //TODO ok so with a delay of 200ms and 20 checks, a double tap must be detected within 4ish seconds
-			readAccelerometer();
-			if(detectTap()){
-				return 2;
-        }
-			HAL_Delay(100);//new reading every 200ms, TODO select
-      }
-		return 1;
+		else if (taps == 2){
+			counter = 0;
+			taps = 0;
+			return 2;
 		}
+	}else if( taps ==1){
+		if(counter > 100){
+			counter = 0;
+			taps = 0;
+			return 1;
+		}
+	}
 	return 0;
-
 }
 	
 
