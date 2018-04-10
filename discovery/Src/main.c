@@ -202,9 +202,9 @@ int tapCount = 0;
 			// wait till integer N arrives from nucleo board
 			// Blink LED2 blue N times
 				HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);				
-				//N = receiveResponseInt();
-				N=3; //TODO FOR TEST
-				for (int i = 0; i < N+1; i++){
+				N = receiveResponseInt();
+				//N=3; //TODO FOR TEST
+				for (int i = 0; i < N; i++){
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);		
 					HAL_Delay(1000);//delay half a second - may need to adjust this
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);

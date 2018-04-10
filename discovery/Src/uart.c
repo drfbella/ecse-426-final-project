@@ -5,7 +5,7 @@
 #define TIMEOUT 10000 //TODO what is a good timeout?
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
-#define TX_BUFFER_SIZE 16000 //size of buffer used for transmitting
+#define TX_BUFFER_SIZE 32000 //size of buffer used for transmitting
 #define RX_BUFFER_SIZE 5 //size of buffer used for recieving
 
 //pin tx A2, rx   on stm32f407
@@ -121,7 +121,7 @@ void transmitFreakinHugeRollAndPitchArrays(float roll[], float pitch[], int size
 	txBuffer[0] = TRANSMISSION_TYPE_ROLLPITCH; //identify type of data being transmitted
 	encodeDegreeArray(roll, (txBuffer+1), size);//convert roll and pitch to byte[] and add to transmission mesage
 	encodeDegreeArray(pitch, (txBuffer+(2*size)+1), size);
-	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, size, TIMEOUT);
+	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT);
 	if(HAL_OK != ret){
 		printf("transmission of ridiculously huge roll and pitch failed. Time to cry now\n");
   }
