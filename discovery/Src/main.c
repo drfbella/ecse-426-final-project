@@ -96,13 +96,30 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
   newValueReady = 1;
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
+	switch(State){
+		case STATE_READ_ACCEL:
+			if(!readAccelForTenDone){
+				if(storeAccelValues() == -1){
+					readAccelForTenDone = 1;
+				}
+			}
+			break;
+		case STATE_DETECT_TAP:
+			//TODO checkForTaps();
+			break;
+	}		
+	
+	
+}
+
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	  //record the pitch and roll values for 10s, calculate pitch and roll
-		if(storeAccelValues() == -1){
-			readAccelForTenDone = 1;
-			HAL_TIM_Base_Stop_IT(&htim3);
-		}
+//		if(storeAccelValues() == -1){
+//			readAccelForTenDone = 1;
+//			HAL_TIM_Base_Stop_IT(&htim3);
+//		}
 //		printf("timer interrupt interrupting\n");
 }
 
@@ -452,10 +469,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(PDM_OUT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  //GPIO_InitStruct.Pin = B1_Pin;
+  //GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  //GPIO_InitStruct.Pull = GPIO_NOPULL;
+  //HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : I2S3_WS_Pin */
   GPIO_InitStruct.Pin = I2S3_WS_Pin;

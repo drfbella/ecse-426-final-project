@@ -98,5 +98,10 @@ void TIM3_IRQHandler(void)
 {
 	HAL_TIM_IRQHandler(&htim3);	
 }
+
+void EXTI0_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(B1_Pin);
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

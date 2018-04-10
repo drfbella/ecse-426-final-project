@@ -32,14 +32,48 @@ int accelIndex = 0;
 	float filteredAccZ[ACCELERATION_BUFFER_SIZE] = {0.0};
 	float storedRoll[ACCELERATION_BUFFER_SIZE] = {0};
 	float storedPitch[ACCELERATION_BUFFER_SIZE] = {0};
+/*
+void checkForTap(){
+	  int tap = 0;
+	//Accelerometer data changes most notably in the y axis upon tap
+	//	This could be optimized but say we detext a tap if there's a change of 25mm/s^2 
+	
+	float largeY = -50000.0;
+	float smallY = 50000.0;
+	
+	float previous = accYWindow[0];
+	float current = accYWindow[1];
+	float next = accYWindow[3];
+	
+	
 
+		for(int i = 1; i < windowSize+1; i++){
+		}
+	
+	for (int j = 0; j < windowSize; j++){
+			
+		//This way, I'm always storing the current value of acc
+		if (accYWindow[j] > largeY){
+			largeY = accYWindow[j];
+		}	
+		if (accYWindow[j] < smallY){
+			smallY = accYWindow[j];
+		}
+	}
+	if ((fabs(largeY) - fabs(smallY) > 25)){
+			printf("tap detected \n");
+			tap = 1;	
+	}
+	return tap;
+}	*/
+	
 void accelerometer_init(void) {
 
 	/* initialise accelerometer */
 	LIS3DSH_InitTypeDef Acc_InitDef;
 
 	/* define field of the accelerometer initialisation structure */
-	Acc_InitDef.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_25;      									/* 25Hz */
+	Acc_InitDef.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_100;      									/* 25Hz */
 	Acc_InitDef.Axes_Enable = LIS3DSH_XYZ_ENABLE;                     									/* XYZ */
 	Acc_InitDef.Continous_Update = LIS3DSH_ContinousUpdate_Disabled;										/* continuous update */
 	Acc_InitDef.AA_Filter_BW = LIS3DSH_AA_BW_50;																				/* 50Hz to filter gravity*/
@@ -47,7 +81,7 @@ void accelerometer_init(void) {
 
 	LIS3DSH_Init(&Acc_InitDef);
 	
-/*If we're doing this with an interrupt, also would need to declare this in 32f4xx_it.c
+//If we're doing this with an interrupt, also would need to declare this in 32f4xx_it.c
 	
 // initilalize accelerometer interupt
 	LIS3DSH_DRYInterruptConfigTypeDef Acc_Interrupt_InitDef;
@@ -60,7 +94,7 @@ void accelerometer_init(void) {
 	LIS3DSH_DataReadyInterruptConfig(&Acc_Interrupt_InitDef);
 
 	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
-	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);*/
+	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);
 
 }
 /**
@@ -138,8 +172,8 @@ void readAccelerometer(){
 					accX = (float)Buffer[0];
 					accY = (float)Buffer[1];
 					accZ = (float)Buffer[2];
-					calcPitch (accX, accY, accZ);
-					calcRoll (accX, accY, accZ);
+//					calcPitch (accX, accY, accZ);
+//					calcRoll (accX, accY, accZ);
 	//				printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
 				
 					//This block is implementing a sliding window and storing fetched values
