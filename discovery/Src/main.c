@@ -65,27 +65,19 @@ static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM2_Init(void);
 
-
-//int recieve();
-//int transmit();
-
 const uint16_t led_pins[] = {LD4_Pin,LD5_Pin,LD6_Pin};
 int State = STATE_DETECT_TAP;
-int N = 0;
-int counter = 0;
-int tapCount = 0;
+int N = 0; //number returned
+int counter = 0; // to avoid initial garbage readings in accelerometer
+int tapCount = 0; // number of taps detected
 
-int readAccelForTenDone = 0;
-int readAudioForOneDone = 0;
+int readAccelForTenDone = 0; //flag to signal end of phase 2
+int readAudioForOneDone = 0; // flag to signal end of phase 1
 
-int audioBufferIndex = 0;
-uint32_t audioBuffer[AUDIO_BUFFER_SIZE] = {0};
+int audioBufferIndex = 0; // current index of audio buffer
+uint32_t audioBuffer[AUDIO_BUFFER_SIZE] = {0}; //buffer to store 1 sec of audio data 
 
-extern 	float filteredAccX[100];
-extern 	float filteredAccY[100];
-extern 	float filteredAccZ[100];
-
-extern float storedRoll[];
+extern float storedRoll[]; //acceleration values to transfer
 extern float storedPitch[];
 
 /*The handler for the ADC automatically calls callback. Should send the value to the filter, calculate min/max, rms*/

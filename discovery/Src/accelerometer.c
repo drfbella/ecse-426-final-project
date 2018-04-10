@@ -185,7 +185,6 @@ int detectTap(void){
 
 int taps = 0;
 extern int counter;
-int hereWeGo = 0;
 
 int howManyTaps(void){
 	
