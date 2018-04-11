@@ -166,7 +166,6 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 
 				case STATE_READ_ACCEL:
 				if(readAccelForTenDone){
-					printf("CHECKING \n");
 					counter = 0; //TODO is this necessary?	
 					State = STATE_DETECT_TAP; //return to state detecting tap
 					HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);// turn off accel read LED

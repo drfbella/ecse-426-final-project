@@ -125,6 +125,7 @@ void transmitFreakinHugeRollAndPitchArrays(float roll[], float pitch[], int size
 	if(HAL_OK != ret){
 		printf("transmission of ridiculously huge roll and pitch failed. Time to cry now\n");
   }
+
 }
 
 //TODO I want to test to make sure this is fine, so for the watch
@@ -148,7 +149,7 @@ void transmitFreakinHugeAudioArray(uint32_t audio[], int size){
 		twoBytesEnough = audio[i];
 		memcpy(&txBuffer[(2*i)+1], &twoBytesEnough, 2);		
 	}
-	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, size, TIMEOUT);
+	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT);
 	if(HAL_OK != ret){
 		printf("transmission of ridiculously huge audio array. Time to cry now\n");
   }
@@ -162,8 +163,7 @@ void transmitFreakinHugeAudioArray(uint32_t audio[], int size){
 int receiveResponseInt(void){
 	if(HAL_OK != HAL_UART_Receive(&uart_handle, rxBuffer, 1, TIMEOUT)){
 		    printf("There was no answer. There was much sadness \n");
-		return 0;
-		
+		return 0;	
 	}
 	else{
 		return rxBuffer[0];
