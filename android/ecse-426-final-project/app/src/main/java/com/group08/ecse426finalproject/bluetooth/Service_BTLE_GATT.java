@@ -51,7 +51,7 @@ public class Service_BTLE_GATT extends Service {
     public final static String EXTRA_DATA = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_DATA";
 
     public static final String uuid_accelerometer_roll = "TODO";
-    public static final UUID UUID_ACCELEROMETER_MEASUREMENT_ROLL = UUID.fromString(uuid_accelerometer_roll);
+//    public static final UUID UUID_ACCELEROMETER_MEASUREMENT_ROLL = UUID.fromString(uuid_accelerometer_roll);
 
 
     // Implements callback methods for GATT events that the app cares about.  For example,
@@ -116,6 +116,7 @@ public class Service_BTLE_GATT extends Service {
                                          int status) {
 
             if (status == BluetoothGatt.GATT_SUCCESS) {
+                Log.d(TAG, "GATT SUCCESS...");
                 broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
             }
         }
@@ -161,37 +162,14 @@ public class Service_BTLE_GATT extends Service {
 
         intent.putExtra(EXTRA_UUID, characteristic.getUuid().toString());
 
-        // Handling accelerometer update //TODO: may be useful for specific formats...
-//        if(UUID_ACCELEROMETER_MEASUREMENT_ROLL.equals(characteristic.getUuid())){
-//                int flag = characteristic.getProperties();
-//
-//                int format = -1;
-//                // checks bit format
-//                if ((flag & 0x01) != 0) {
-//                    format = BluetoothGattCharacteristic.FORMAT_UINT16;
-//                    Log.d(TAG, "Accelerometer format UINT16.");
-//                } else {
-//                    format = BluetoothGattCharacteristic.FORMAT_UINT8;
-//                    Log.d(TAG, "Accelerometer format UINT8.");
-//                }
-//
-//                final int accelerometerRoll = characteristic.getIntValue(format, 1);
-//                Log.d(TAG, String.format("Received accelerometer roll data: %d", accelerometerRoll));
-//                intent.putExtra(EXTRA_DATA, String.valueOf(accelerometerRoll));
-//        }
+        if(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).equals(characteristic.getUuid())){
+            intent.putExtra(EXTRA_DATA, characteristic.getValue());
 
-        // For all other profiles, writes the data formatted in HEX.
-        final byte[] data = characteristic.getValue(); // data in HEX
-
-        if (data != null && data.length > 0) {
-
-            intent.putExtra(EXTRA_DATA, new String(data) + "\n" + BluetoothUtils.hexToString(data));
+            Log.d(TAG, "Added new data which is : " + new String(characteristic.getValue()));
         }
-        else {
-            intent.putExtra(EXTRA_DATA, "0");
-        }
-        Log.d(TAG, "Added new data which is : " + new String(data));
+
         sendBroadcast(intent);
+
     }
 
     public BluetoothGatt getGatt() {

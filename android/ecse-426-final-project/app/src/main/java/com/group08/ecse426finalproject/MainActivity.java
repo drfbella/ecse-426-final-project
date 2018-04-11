@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.group08.ecse426finalproject.accelerometer.AccelerometerActivity;
+import com.group08.ecse426finalproject.bluetooth.Activity_BTLE_Services;
 import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
 import com.group08.ecse426finalproject.speech.SpeechActivity;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
@@ -18,7 +19,7 @@ import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
-    private static final int BLUETOOTH_ACTIVITY_REQUEST_CODE = 1;
+    private static final int BLUETOOTH_ACTIVITY_REQUEST_CODE = 2;
     private static byte[] pitchData = new byte[]{};
     private static byte[] rollData = new byte[]{};
     private static byte[] speechData = new byte[]{};
@@ -68,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
                 pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
                 rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
                 speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
-                Log.d(TAG, "speechData value is: " + BluetoothUtils.hexToString(speechData));
-                Log.d(TAG, "onActivityResult in MainActivity");
+                Log.d(TAG, "speechData value is: " + new String(speechData));
+//                Log.d(TAG, "onActivityResult in MainActivity");
             }
         }
     }

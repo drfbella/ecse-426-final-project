@@ -19,6 +19,8 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
 
     public String data;
     public String uuid;
+    public byte[] speechData;
+
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
     // ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
@@ -43,14 +45,15 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         }
         else if (Service_BTLE_GATT.ACTION_DATA_AVAILABLE.equals(action)) {
 
-             uuid = intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID); // TODO: this stores the values to the appropriate characterstics...
-             data = intent.getStringExtra(Service_BTLE_GATT.EXTRA_DATA);
-            Log.d("DEBUG CHECK ONRECEIVE", data);
-//            speechData = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA); //TODO: store in byte array?
+//             uuid = intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID); // TODO: this stores the values to the appropriate characterstics...
+//             data = intent.getStringExtra(Service_BTLE_GATT.EXTRA_DATA);
+//            Log.d("DEBUG CHECK ONRECEIVE", data);
+            byte[] byteArray = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA);
+            Log.d("ON RECEIVE DEBUG: " , new String(byteArray));
+            activity.updateSpeechData(byteArray); //TODO: store in byte array?
 
             activity.updateCharacteristic();
         }
-
         return;
     }
 }

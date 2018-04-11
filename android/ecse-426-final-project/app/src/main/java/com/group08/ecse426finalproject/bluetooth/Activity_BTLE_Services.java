@@ -118,7 +118,9 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             @Override
             public void onClick(View v) {
                 // TODO: reconfigure this and requires testing
-                speechData = readData(audioServiceUUID, audioCharacteristicUUID);
+
+                readDataFromCallBack(audioServiceUUID, audioCharacteristicUUID);
+//                speechData = readData(audioServiceUUID, audioCharacteristicUUID);
 //                rollData = readData(accelerometerServiceUUID, accelerometerRollUUID);
 //                pitchData = readData(accelerometerServiceUUID, accelerometerPitchUUID);
             }
@@ -272,6 +274,26 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         return mCharacteristic.getValue();
     }
 
+    public void readDataFromCallBack(String serviceStringUUID, String characteristicStringUUID){
+
+        BluetoothGatt mGatt = mBTLE_Service.getGatt();
+        BluetoothGattService mService = mGatt.getService(UUID.fromString(serviceStringUUID));
+        if(mService == null) {
+            Log.d(TAG, "couldn't find service");
+            return;
+        }
+        BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(characteristicStringUUID));
+        if(mCharacteristic == null) {
+            Log.d(TAG, "Unable to read given characteristic.");
+            return;
+        }
+
+        if(mGatt.readCharacteristic(mCharacteristic)) {   //read data
+            Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+        }
+    }
+
+
     public byte[] readAudio(){
         BluetoothGatt mGatt = mBTLE_Service.getGatt();
         BluetoothGattService mAudioService = mGatt.getService(UUID.fromString(audioServiceUUID));
@@ -349,12 +371,19 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         i.putExtra(SPEECH_DATA_NAME, speechData);
         setResult(BluetoothActivity.BTLE_SERVICES, i);
 
-        Log.d(TAG, "the extra data is " + Service_BTLE_GATT.EXTRA_DATA);
-
-        Log.d(TAG, "the extra data from receiver is " + mGattUpdateReceiver.data);
+        Log.d(TAG, "the extra data is " + new String(speechData));
 
         finish();
         super.onBackPressed();
     }
 
+    public void updateSpeechData(byte[] byteArrayExtra) {
+        this.speechData = byteArrayExtra;
+//        String test = new String(byteArrayExtra);
+//
+//        Log.d(TAG, test);
+    }
+    public void updateSpeechData(String stringData){
+//        this.speechData = Byte.parseByte(stringData);
+    }
 }

@@ -330,7 +330,8 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
         else if (requestCode == BTLE_SERVICES){
 //            pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
 //            rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
-//            speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
+            speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
+            Log.d(TAG, new String(speechData));
             if(speechData == null){
                 Log.d(TAG,"Speech Data is null");
             }
