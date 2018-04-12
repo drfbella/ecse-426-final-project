@@ -291,6 +291,14 @@ int main(void)
 
 
 uint8_t processUART(uint8_t type){
+
+  if(set_connectable){
+    setConnectable();
+    set_connectable = FALSE;
+  }  
+    if(connected)
+    {
+
 	//clear transmission flag
 	TRANSFER_FLAG_Notify(0);
 	switch(type){
@@ -306,7 +314,7 @@ uint8_t processUART(uint8_t type){
 			TRANSFER_FLAG_Notify(1);
 			return 0;
 	}
-
+}
 	return 0;
 	//send end of transmission flag?
 }

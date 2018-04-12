@@ -230,7 +230,6 @@ tBleStatus TRANSFER_FLAG_Notify(int value)
   return BLE_STATUS_SUCCESS;	
 }
 
-	uint8_t buff[20];
 
 /**
  * @brief  Update roll pitch characteristic value.
@@ -240,6 +239,7 @@ tBleStatus TRANSFER_FLAG_Notify(int value)
 tBleStatus RP_Update(void)
 {  
   tBleStatus ret;    
+	uint8_t buff[20];
 
 		
 	while(getNext20BytePacket(buff)){
@@ -263,7 +263,7 @@ tBleStatus RP_Update(void)
 tBleStatus AUDIO_Update(void)
 {  
   tBleStatus ret;    
-//	uint8_t buff[20];
+	uint8_t buff[20];
 
 		
 	while(getNext20BytePacket(buff)){
