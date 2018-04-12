@@ -1,13 +1,16 @@
 #include "stm32xx_it.h"
 #include "math.h"
-
+#include "uart.h"
 #include <string.h>
 
-#define TIMEOUT 10000 //TODO what is a good timeout?
-#define TRANSMISSION_TYPE_ROLLPITCH 1
-#define TRANSMISSION_TYPE_AUDIO 2
+#define TIMEOUT 500 //TODO what is a good timeout?
+
 #define TX_BUFFER_SIZE 1 //size of buffer used for transmitting
 #define RX_BUFFER_SIZE 32001 //size of buffer used for recieving
+#define AUDIO_MAX_INDEX 32000
+#define ROLL_MAX_INDEX 2000
+#define PITCH_MAX_INDEX 4000
+#define BLE_PACKET_SIZE 20
 
 UART_HandleTypeDef uart_handle;
 
@@ -60,30 +63,64 @@ void transmitTest(){
 	transmit(55);
 }
 
-
+int pending = 0;
+int indexOfPending = 1;
 /**
   * @brief  Calls HAL_UART_Receive. If a message was received, checks if it is a roll/pitch or an audio message 
   * @param  None
   * @retval None
   */
 uint8_t recieveMessage(){
-  if(HAL_OK != HAL_UART_Receive(&uart_handle, (uint8_t*)rxBuffer, RX_BUFFER_SIZE, TIMEOUT)){
-			//TODO error
+	HAL_StatusTypeDef ret = HAL_UART_Receive(&uart_handle, (uint8_t*)rxBuffer, RX_BUFFER_SIZE, TIMEOUT);
+  if(HAL_OK != ret){
+			
     }
 	else{
 		if(rxBuffer[0] == TRANSMISSION_TYPE_AUDIO){
 			//update audio
 			//send BLE
 			// response BLE
-			transmit(3);
-
+			pending = TRANSMISSION_TYPE_AUDIO;
+			indexOfPending = 1;
+			transmit(3); //TODO remove this is for testing transmit
 		}else if(rxBuffer[0] == TRANSMISSION_TYPE_ROLLPITCH){
 			//update roll and ptch
 			//transmit BLE
+			pending = TRANSMISSION_TYPE_ROLLPITCH;
+			indexOfPending = 1;
 			transmit(UINT8_MAX);
 		}			
 	}
 	return rxBuffer[0];
+}
+
+/**
+  * @brief  Checks if need to relay some received data to bluetooth
+  * @param  packet, pointer to array of bytes to point to chunk of data
+  * @retval type of data to be transmitted (TRANSMISSION_TYPE_AUDIO, TRANSMISSION_TYPE_ROLLPITCH or 0 if there is no data left unpacketted)
+*/
+int getNext20BytePacket(uint8_t*packet){
+	int maxIndex = -1;
+	switch(pending){
+		case TRANSMISSION_TYPE_AUDIO:
+			maxIndex = AUDIO_MAX_INDEX;
+			break;
+		case TRANSMISSION_TYPE_ROLLPITCH:
+			maxIndex = PITCH_MAX_INDEX;
+			break;			
+	}
+	if(indexOfPending <= maxIndex-BLE_PACKET_SIZE){ // check just in case
+		memcpy(packet,&rxBuffer[indexOfPending], BLE_PACKET_SIZE);//just brute force set address of packet to chunk of rx buffer
+		indexOfPending+=BLE_PACKET_SIZE;//increment index
+		if(indexOfPending > maxIndex){ // check again - if we have now surpassed the index, set pending to 0 (no packets left)
+			printf("%d", indexOfPending);
+			pending = 0;
+			indexOfPending = 1;
+		}
+	}else{
+		pending = 0;
+	}	
+	return pending;
 }
 
 
