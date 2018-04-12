@@ -73,7 +73,7 @@ int indexOfPending = 1;
 uint8_t recieveMessage(){
 	HAL_StatusTypeDef ret = HAL_UART_Receive(&uart_handle, (uint8_t*)rxBuffer, RX_BUFFER_SIZE, TIMEOUT);
   if(HAL_OK != ret){
-			
+			return 0;
     }
 	else{
 		if(rxBuffer[0] == TRANSMISSION_TYPE_AUDIO){
