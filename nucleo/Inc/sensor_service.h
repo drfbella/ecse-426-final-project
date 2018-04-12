@@ -123,6 +123,12 @@ void       GAP_ConnectionComplete_CB(uint8_t addr[6], uint16_t handle);
 void       GAP_DisconnectionComplete_CB(void);
 void       HCI_Event_CB(void *pckt);
 
+tBleStatus Add_Final_Service(void);
+tBleStatus TRANSFER_FLAG_Notify(int value);
+tBleStatus RP_Update(void);
+tBleStatus AUDIO_Update(void);
+
+
 #if NEW_SERVICES
   tBleStatus Add_Time_Service(void);
   tBleStatus Seconds_Update(void);

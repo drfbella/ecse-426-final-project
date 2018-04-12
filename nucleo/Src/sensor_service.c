@@ -35,7 +35,7 @@
   ******************************************************************************
   */
 #include "sensor_service.h"
-
+#include "uart.h"
 /** @addtogroup X-CUBE-BLE1_Applications
  *  @{
  */
@@ -59,6 +59,7 @@ volatile uint8_t notification_enabled = FALSE;
 volatile AxesRaw_t axes_data = {0, 0, 0};
 uint16_t sampleServHandle, TXCharHandle, RXCharHandle;
 uint16_t accServHandle, freeFallCharHandle, accCharHandle;
+uint16_t finalServHandle, rollPitchHandle, audioHandle, transferFlagHandle, returnHandle;
 uint16_t envSensServHandle, tempCharHandle, pressCharHandle, humidityCharHandle;
 
 #if NEW_SERVICES
@@ -89,6 +90,13 @@ do {\
   #define COPY_FREE_FALL_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0x02,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
   #define COPY_ACC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x03,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 
+	#define COPY_FINAL_SERVICE_UUID(uuid_struct)  	COPY_UUID_128(uuid_struct,0x03,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_ROLL_PITCH_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_AUDIO_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe4,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+//  #define COPY_RETURN_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe5,0x3f,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_TRANSFER_FLAG_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x00,0x02,0xa5,0xd5,0xc5,0x1c)
+
+
   #define COPY_ENV_SENS_SERVICE_UUID(uuid_struct)  COPY_UUID_128(uuid_struct,0x04,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
   #define COPY_TEMP_CHAR_UUID(uuid_struct)         COPY_UUID_128(uuid_struct,0x05,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
   #define COPY_PRESS_CHAR_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0x06,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
@@ -108,6 +116,14 @@ do {\
   #define COPY_FREE_FALL_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0xe2,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
   #define COPY_ACC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x34,0x0a,0x1b,0x80, 0xcf,0x4b, 0x11,0xe1, 0xac,0x36, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 
+
+	#define COPY_FINAL_SERVICE_UUID(uuid_struct)  	COPY_UUID_128(uuid_struct,0x03,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_ROLL_PITCH_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_AUDIO_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe4,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+//  #define COPY_RETURN_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe5,0x3f,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_TRANSFER_FLAG_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x00,0x02,0xa5,0xd5,0xc5,0x1c)
+
+
   #define COPY_ENV_SENS_SERVICE_UUID(uuid_struct)  COPY_UUID_128(uuid_struct,0x42,0x82,0x1a,0x40, 0xe4,0x77, 0x11,0xe2, 0x82,0xd0, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
   #define COPY_TEMP_CHAR_UUID(uuid_struct)         COPY_UUID_128(uuid_struct,0xa3,0x2e,0x55,0x20, 0xe4,0x77, 0x11,0xe2, 0xa9,0xe3, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
   #define COPY_PRESS_CHAR_UUID(uuid_struct)        COPY_UUID_128(uuid_struct,0xcd,0x20,0xc4,0x80, 0xe4,0x8b, 0x11,0xe2, 0x84,0x0b, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
@@ -124,6 +140,146 @@ do {\
 /** @defgroup SENSOR_SERVICE_Exported_Functions 
  * @{
  */ 
+
+/**
+ * @brief  Add service for final project.
+ *
+ * @param  None
+ * @retval tBleStatus Status
+ */
+tBleStatus Add_Final_Service(void)
+{
+  tBleStatus ret;
+
+  uint8_t uuid[16];
+
+
+  
+  COPY_FINAL_SERVICE_UUID(uuid);
+  ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 10,
+                          &finalServHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;    
+
+
+
+  COPY_TRANSFER_FLAG_UUID(uuid);  
+  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
+                           CHAR_PROP_NOTIFY|CHAR_PROP_READ,
+                           ATTR_PERMISSION_NONE,
+                           GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                           16, 0, &transferFlagHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+  
+	
+  COPY_ROLL_PITCH_UUID(uuid);
+  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
+                           CHAR_PROP_NOTIFY|CHAR_PROP_READ, ATTR_PERMISSION_NONE, GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                           16, 0, &rollPitchHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+  
+	
+  COPY_AUDIO_UUID(uuid);  
+  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
+                           CHAR_PROP_NOTIFY|CHAR_PROP_READ,
+                           ATTR_PERMISSION_NONE,
+                           GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                           16, 0, &audioHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+	
+
+/*
+  COPY_RETURN_UUID(uuid);  
+  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 1,
+                           CHAR_PROP_NOTIFY|CHAR_PROP_READ|CHAR_PROP_WRITE,
+                           ATTR_PERMISSION_NONE,
+                           GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                           16, 0, &returnHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+*/
+  
+  PRINTF("Service FINAL added. Handle 0x%04X, Roll and Pitch Charac handle: 0x%04X, AUDIO Charac handle: 0x%04X\n",finalServHandle, rollPitchHandle, audioHandle);	
+  return BLE_STATUS_SUCCESS; 
+  
+fail:
+  PRINTF("Error while adding FINAL service.\n");
+  return BLE_STATUS_ERROR ;
+    
+}
+
+
+/**
+ * @brief  Send a notification for end of transmission.
+ *
+ * @param  None
+ * @retval tBleStatus Status
+ */
+tBleStatus TRANSFER_FLAG_Notify(int value)
+{  
+  uint8_t val;
+  tBleStatus ret;
+	
+  val = value;	
+  ret = aci_gatt_update_char_value(finalServHandle, transferFlagHandle, 0, 1,
+                                   &val);
+	
+  if (ret != BLE_STATUS_SUCCESS){
+    PRINTF("Error while updating transferflag characteristic.\n") ;
+    return BLE_STATUS_ERROR ;
+  }
+  return BLE_STATUS_SUCCESS;	
+}
+
+	uint8_t buff[20];
+
+/**
+ * @brief  Update roll pitch characteristic value.
+ *
+ * @retval Status
+ */
+tBleStatus RP_Update(void)
+{  
+  tBleStatus ret;    
+
+		
+	while(getNext20BytePacket(buff)){
+		ret = aci_gatt_update_char_value(finalServHandle, rollPitchHandle, 0, 20, buff);
+	
+		if (ret != BLE_STATUS_SUCCESS){
+			PRINTF("Error while updating roll pitch characteristic.\n") ;
+			return BLE_STATUS_ERROR ;
+		}
+	}
+		
+  return BLE_STATUS_SUCCESS;	
+}
+
+
+/**
+ * @brief  Update audio characteristic value.
+ *
+ * @retval Status
+ */
+tBleStatus AUDIO_Update(void)
+{  
+  tBleStatus ret;    
+//	uint8_t buff[20];
+
+		
+	while(getNext20BytePacket(buff)){
+		do{
+		ret = aci_gatt_update_char_value(finalServHandle, audioHandle, 0, 20, buff);
+	
+		if (ret != BLE_STATUS_SUCCESS){
+			PRINTF("Error while updating audio characteristic.\n") ;
+			return BLE_STATUS_ERROR ;
+		}
+	}while(ret!=BLE_STATUS_SUCCESS);
+	}
+  return BLE_STATUS_SUCCESS;	
+}
+
+
 /**
  * @brief  Add an accelerometer service using a vendor specific profile.
  *

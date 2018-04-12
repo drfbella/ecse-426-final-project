@@ -68,6 +68,7 @@ extern volatile uint8_t set_connectable;
 extern volatile int connected;
 extern AxesRaw_t axes_data;
 uint8_t bnrg_expansion_board = IDB04A1; /* at startup, suppose the X-NUCLEO-IDB04A1 is used */
+uint8_t transmissionType = 0;
 /**
  * @}
  */
@@ -77,6 +78,7 @@ uint8_t bnrg_expansion_board = IDB04A1; /* at startup, suppose the X-NUCLEO-IDB0
  */
 /* Private function prototypes -----------------------------------------------*/
 void User_Process(AxesRaw_t* p_axes);
+uint8_t processUART(uint8_t type);
 /**
  * @}
  */
@@ -107,7 +109,7 @@ void User_Process(AxesRaw_t* p_axes);
 int main(void)
 {
   const char *name = "BlueNRG";
-  uint8_t SERVER_BDADDR[] = {0x12, 0x34, 0x00, 0xE1, 0x80, 0x03};
+  uint8_t SERVER_BDADDR[] = {0x03, 0x03, 0x03, 0xE1, 0x80, 0x03};
   uint8_t bdaddr[BDADDR_SIZE];
   uint16_t service_handle, dev_name_char_handle, appearance_char_handle;
   
@@ -234,6 +236,14 @@ int main(void)
   else
     PRINTF("Error while adding Environmental Sensor service.\n");
 
+	  ret = Add_Final_Service();
+  
+  if(ret == BLE_STATUS_SUCCESS)
+    PRINTF("final service added successfully.\n");
+  else
+    PRINTF("Error while adding finalservice.\n");
+
+	
 #if NEW_SERVICES
   /* Instantiate Timer Service with two characteristics:
    * - seconds characteristic (Readable only)
@@ -264,13 +274,41 @@ int main(void)
 	
   while(1)
   {
-    recieveMessage();
+    transmissionType = recieveMessage();
+		if(transmissionType){
+			uint8_t ret = processUART(transmissionType);
+			if(transmissionType == TRANSMISSION_TYPE_AUDIO){
+				transmit(ret);
+			}
+		}
     HCI_Process();
     User_Process(&axes_data);
 #if NEW_SERVICES
     Update_Time_Characteristics();
 #endif
   }
+}
+
+
+uint8_t processUART(uint8_t type){
+	//clear transmission flag
+	TRANSFER_FLAG_Notify(0);
+	switch(type){
+		case TRANSMISSION_TYPE_AUDIO:
+			AUDIO_Update();
+			TRANSFER_FLAG_Notify(1);
+			
+		//todo listen
+		return 3;
+		
+	case TRANSMISSION_TYPE_ROLLPITCH:
+			RP_Update();
+			TRANSFER_FLAG_Notify(1);
+			return 0;
+	}
+
+	return 0;
+	//send end of transmission flag?
 }
 
 /**

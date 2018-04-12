@@ -82,7 +82,7 @@ uint8_t recieveMessage(){
 			// response BLE
 			pending = TRANSMISSION_TYPE_AUDIO;
 			indexOfPending = 1;
-			transmit(3); //TODO remove this is for testing transmit
+		//	transmit(3); //TODO remove this is for testing transmit
 		}else if(rxBuffer[0] == TRANSMISSION_TYPE_ROLLPITCH){
 			//update roll and ptch
 			//transmit BLE
@@ -112,11 +112,11 @@ int getNext20BytePacket(uint8_t*packet){
 	if(indexOfPending <= maxIndex-BLE_PACKET_SIZE){ // check just in case
 		memcpy(packet,&rxBuffer[indexOfPending], BLE_PACKET_SIZE);//just brute force set address of packet to chunk of rx buffer
 		indexOfPending+=BLE_PACKET_SIZE;//increment index
-		if(indexOfPending > maxIndex){ // check again - if we have now surpassed the index, set pending to 0 (no packets left)
+/*		if(indexOfPending > maxIndex){ // check again - if we have now surpassed the index, set pending to 0 (no packets left)
 			printf("%d", indexOfPending);
 			pending = 0;
 			indexOfPending = 1;
-		}
+		}*/
 	}else{
 		pending = 0;
 	}	
