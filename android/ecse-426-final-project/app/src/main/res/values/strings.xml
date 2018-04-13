@@ -11,4 +11,8 @@
     <string name="speech">Speech</string>
     <string name="accelerometer">Accelerometer</string>
     <string name="store_values">Store Values</string>
+    <string name="pitch_plotly_link_text"><![CDATA[<Pitch Plotly Link>]]></string>
+    <string name="roll_plotly_link_text"><![CDATA[<Roll Plotly Link>]]></string>
+    <string name="grid_request_sent">Grid request sent...</string>
+    <string name="plot_request_sent">Plot request sent...</string>
 </resources>

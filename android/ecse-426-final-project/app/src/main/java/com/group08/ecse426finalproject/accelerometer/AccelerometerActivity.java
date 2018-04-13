@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -46,6 +46,8 @@ public class AccelerometerActivity extends AppCompatActivity {
     private static final String PLOTLY_GRIDS_URL = "https://api.plot.ly/v2/grids";
     private static final String PLOTLY_PLOTS_URL = "https://api.plot.ly/v2/plots";
     private ResourceAccessor resourceAccessor;
+    private TextView textPlotlyPitchLink;
+    private TextView textPlotlyRollLink;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +64,9 @@ public class AccelerometerActivity extends AppCompatActivity {
 
         pitchData = randomData(NUM_SAMPLES);
         rollData = randomData(NUM_SAMPLES);
+
+        textPlotlyPitchLink = findViewById(R.id.text_pitch_plotly_link);
+        textPlotlyRollLink = findViewById(R.id.text_roll_plotly_link);
 
         LineChart pitchChart = findViewById(R.id.pitch_chart);
         LineChart rollChart = findViewById(R.id.roll_chart);
@@ -131,8 +136,6 @@ public class AccelerometerActivity extends AppCompatActivity {
         return columns;
     }
 
-
-
     public void sendPlotlyGridAndPlotRequest(final List<Float> timeData, final List<Float> pitchData,
                                              final List<Float> rollData) {
         final RequestQueue queue = Volley.newRequestQueue(this);
@@ -178,6 +181,8 @@ public class AccelerometerActivity extends AppCompatActivity {
             }
         };
         queue.add(stringRequestGrids);
+        textPlotlyPitchLink.setText(R.string.grid_request_sent);
+        textPlotlyRollLink.setText(R.string.grid_request_sent);
     }
 
     private void sendPitchRollPlotRequest(RequestQueue queue, JSONObject gridResponse) {
@@ -197,12 +202,13 @@ public class AccelerometerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        sendPlotRequest(queue, gridFID, timeColUID, pitchColUID, "rgb(255, 0, 0)", "pitch");
-        sendPlotRequest(queue, gridFID, timeColUID, rollColUID, "rgb(0, 0, 255)", "roll");
+        sendPlotRequest(queue, gridFID, timeColUID, pitchColUID, "rgb(255, 0, 0)", "pitch", textPlotlyPitchLink);
+        sendPlotRequest(queue, gridFID, timeColUID, rollColUID, "rgb(0, 0, 255)", "roll", textPlotlyRollLink);
     }
 
     private void sendPlotRequest(RequestQueue queue, String gridFID, String timeColUID,
-                                 String dataColUID, String color, String dataName) {
+                                 String dataColUID, String color, String dataName,
+                                 final TextView textLink) {
         JSONObject jsonGridData = null;
         try {
             jsonGridData = new JSONObject()
@@ -227,16 +233,14 @@ public class AccelerometerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        JsonObjectRequest stringRequestGrids = new JsonObjectRequest(Request.Method.POST,
+        JsonObjectRequest stringRequestPlot = new JsonObjectRequest(Request.Method.POST,
                 PLOTLY_PLOTS_URL, jsonGridData, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
                 Log.d(TAG, "plotly plot API call success" + response.toString());
                 try {
-                    Toast.makeText(AccelerometerActivity.this,
-                            "Graph created at: "
-                                    + response.getJSONObject("file").getString("web_url"),
-                            Toast.LENGTH_SHORT);
+                    String plotlyURL = response.getJSONObject("file").getString("web_url");
+                    textLink.setText(plotlyURL);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -256,6 +260,7 @@ public class AccelerometerActivity extends AppCompatActivity {
                 return headers;
             }
         };
-        queue.add(stringRequestGrids);
+        queue.add(stringRequestPlot);
+        textLink.setText(R.string.plot_request_sent);
     }
 }
