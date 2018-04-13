@@ -1,9 +1,5 @@
 package com.group08.ecse426finalproject.utils;
 
-/**
- * Created by seanstappas1 on 2018-04-13.
- */
-
 public class ByteUtils {
     private static final float PITCH_ROLL_RESOLUTION = 65_536f; // 16 bits of resolution
     private static final int MAX_PITCH_ROLL_VALUE = 360;
