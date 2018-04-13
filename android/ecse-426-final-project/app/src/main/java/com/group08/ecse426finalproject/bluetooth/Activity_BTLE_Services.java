@@ -41,15 +41,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         ECSE-426-PROJECT SPECIFIC UUIDs
      */
     public static final  String audioCharacteristicUUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; // TODO: configure audio characteristic UUID
-//    public static final  String audioCharacteristicUUID = "e893d43d-c166-4e77-9eCF-6f6f81d76006"; // TODO: configure audio characteristic UUID
-public static final String serviceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c"; // TODO: configure audio service UUID
-//    public static final  String serviceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
-    public static final  String accelerometerPitchUUID = "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for pitch UUID
-    public static final  String accelerometerRollUUID =  "e33e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for roll UUID
-
-    public static final byte[] accelerometerService = {(byte)0x03,(byte)0x36,(byte)0x6e,(byte)0x80,
-            (byte)0xcf,(byte)0x3a, (byte)0x11,(byte)0xe1, (byte)0x9a,(byte)0xb4,
-            (byte)0x20,(byte)0x02,(byte)0xa5,(byte)0xd5,(byte)0xc5,(byte)0x1c};
+    public static final  String accelerometerPitchUUID = "e73e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for pitch UUID
+    public static final  String accelerometerRollUUID =  "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for roll UUID
+    public static final  String serviceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c"; // TODO: configure audio service UUID
+    //    public static final  String audioCharacteristicUUID = "e893d43d-c166-4e77-9eCF-6f6f81d76006"; // TODO: configure audio characteristic UUID
+    //    public static final  String serviceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
 
     private List<byte[]> pitchData = new ArrayList<>();
     private List<byte[]> rollData = new ArrayList<>();

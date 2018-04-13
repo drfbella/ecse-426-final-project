@@ -27,6 +27,7 @@ import java.util.UUID;
  */
 @TargetApi(18)
 public class Service_BTLE_GATT extends Service {
+    public static int notifyCounter = 0;
     /*
      * Service for managing connection and data communication with a GATT server hosted on a
      * given Bluetooth LE device.
@@ -101,13 +102,9 @@ public class Service_BTLE_GATT extends Service {
             }
 
             setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
-                    Activity_BTLE_Services.audioCharacteristicUUID);
+                    Activity_BTLE_Services.audioCharacteristicUUID, true);
 
-            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
-                    Activity_BTLE_Services.accelerometerPitchUUID);
 
-            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
-                    Activity_BTLE_Services.accelerometerRollUUID);
         }
 
         /**
@@ -129,6 +126,18 @@ public class Service_BTLE_GATT extends Service {
             }
         }
 
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            if(notifyCounter == 0) {
+                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                        Activity_BTLE_Services.accelerometerPitchUUID, true);
+                notifyCounter ++;
+            } else if (notifyCounter == 1) {
+                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                        Activity_BTLE_Services.accelerometerRollUUID, true);
+                notifyCounter++;
+            }
+        }
 
         /**
          *  Called on characteristic changed, update data
@@ -407,7 +416,7 @@ public class Service_BTLE_GATT extends Service {
     }
 
 
-    private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID) {
+    private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID, boolean set) {
         BluetoothGattService mService = gatt.getService(UUID.fromString(serviceUUID));
         if(mService == null) {
             Log.d(TAG, "couldn't find service: " + serviceUUID);
@@ -420,7 +429,7 @@ public class Service_BTLE_GATT extends Service {
         }
 
         if (BluetoothUtils.hasNotifyProperty(mCharacteristic.getProperties()) != 0) {
-            if (gatt.setCharacteristicNotification(mCharacteristic, true)) {
+            if (gatt.setCharacteristicNotification(mCharacteristic, set)) {
                 BluetoothGattDescriptor descriptor = mCharacteristic.getDescriptors().get(0);
                 if (0 != (mCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE)) {
                     // It's an indicate characteristic
@@ -433,8 +442,11 @@ public class Service_BTLE_GATT extends Service {
                     // It's a notify characteristic
                     Log.d("onServicesDiscovered", "Characteristic (" + mCharacteristic.getUuid() + ") is NOTIFY");
                     if (descriptor != null) {
-                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                        gatt.writeDescriptor(descriptor);
+                        Log.d(TAG, "Descriptor is not null for: " +  mCharacteristic.getUuid());
+                        if(descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE))
+                            Log.d(TAG, "Descriptor set for: " +  mCharacteristic.getUuid());
+                        if(gatt.writeDescriptor(descriptor))
+                            Log.d(TAG, "Descriptor Notified for: " +  mCharacteristic.getUuid());
                     }
                 }
             }
