@@ -54,15 +54,16 @@ public class SpeechActivity extends AppCompatActivity {
 
         firebaseService.uploadBytesUnique(speechData, "audio/","raw", textFirebaseLink);
 
-        sendGoogleSpeechTranscriptionRequest(speechData);
+//        sendGoogleSpeechTranscriptionRequest(speechData);
+        sendDemoRequestBytes();
     }
 
     public void sendDemoRequestString() {
-        sendGoogleSpeechTranscriptionRequest(resourceAccessor.readRawResourceString(R.raw.audio_64));
+        sendGoogleSpeechTranscriptionRequest(resourceAccessor.readRawResourceString(R.raw.test_64));
     }
 
     public void sendDemoRequestBytes() {
-        sendGoogleSpeechTranscriptionRequest(resourceAccessor.readRawResourceBytes(R.raw.audio));
+        sendGoogleSpeechTranscriptionRequest(resourceAccessor.readRawResourceBytes(R.raw.test_converted));
     }
 
     public void sendGoogleSpeechTranscriptionRequest(byte[] audio_bytes) {

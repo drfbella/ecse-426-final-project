@@ -40,7 +40,6 @@ import java.util.Random;
 import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 
-
 public class AccelerometerActivity extends AppCompatActivity {
     private static final String TAG = "AccelerometerActivity";
     private static final int NUM_SAMPLES = 1000 + 1; // 10 seconds at 100 Hz
@@ -67,8 +66,8 @@ public class AccelerometerActivity extends AppCompatActivity {
         Log.d(TAG, "Received pitch data: " + Arrays.toString(pitchData));
         Log.d(TAG, "Received roll data: " + Arrays.toString(rollData));
 
-        pitchData = randomData(NUM_SAMPLES);
-        rollData = randomData(NUM_SAMPLES);
+//        pitchData = randomData(NUM_SAMPLES);
+//        rollData = randomData(NUM_SAMPLES);
 
         textPlotlyPitchLink = findViewById(R.id.text_pitch_plotly_link);
         textPlotlyRollLink = findViewById(R.id.text_roll_plotly_link);
@@ -84,6 +83,9 @@ public class AccelerometerActivity extends AppCompatActivity {
         List<Float> timeData = cols.get(0);
         List<Float> convertedPitchData = cols.get(1);
         List<Float> convertedRollData = cols.get(2);
+
+        Log.d(TAG, "Converted pitch data: " + convertedPitchData);
+        Log.d(TAG, "Converted roll data: " + convertedRollData);
 
         setChartData(pitchChart, timeData, convertedPitchData, "pitch", Color.RED);
         setChartData(rollChart, timeData, convertedRollData, "roll", Color.BLUE);

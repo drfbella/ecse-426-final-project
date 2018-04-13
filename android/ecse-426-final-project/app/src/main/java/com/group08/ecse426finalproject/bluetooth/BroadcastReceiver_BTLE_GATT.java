@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.UUID;
 
 public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
-    private static final String TAG = "BLTE_GATT";
+    private static final String TAG = "BroadcastReceiver";
 
     private boolean mConnected = false;
 
@@ -47,26 +47,22 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
             activity.updateServices();
         }
         else if (Service_BTLE_GATT.ACTION_DATA_AVAILABLE.equals(action)) {
-
             byte[] byteArray = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA);
-
-
-            //Log.d(TAG, "byteArray value is: " + Arrays.toString(byteArray));
-            int[] speechUnsigned = byteUtils.toUnsignedArray(byteArray);
-            Log.d(TAG, "byteArray unsigned value is: " + Arrays.toString(speechUnsigned));
-
-            Log.d("ON RECEIVE DEBUG: " , intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID));
-            if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).toString())){
-                Log.d("ON RECEIVE DEBUG: " , new String(byteArray));
-                activity.updateSpeechData(byteArray); // TODO: store in byte array?
-            } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).toString())){
-                activity.updatePitchData(byteArray);
-            } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).toString())){
-                activity.updateRollData(byteArray);
+            if (byteArray != null) {
+                int[] unsignedByteArray = byteUtils.toUnsignedArray(byteArray);
+                Log.d("ON RECEIVE DEBUG: " , intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID));
+                if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).toString())){
+                    Log.d(TAG, "Received audio data: " + Arrays.toString(unsignedByteArray));
+                    activity.updateSpeechData(byteArray);
+                } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).toString())){
+                    Log.d(TAG, "Received pitch data: " + Arrays.toString(unsignedByteArray));
+                    activity.updatePitchData(byteArray);
+                } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).toString())){
+                    Log.d(TAG, "Received roll data: " + Arrays.toString(unsignedByteArray));
+                    activity.updateRollData(byteArray);
+                }
+                activity.updateCharacteristic();
             }
-
-            activity.updateCharacteristic();
         }
-        return;
     }
 }

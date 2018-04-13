@@ -100,8 +100,14 @@ public class Service_BTLE_GATT extends Service {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
 
-            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.audioServiceUUID,
+            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
                     Activity_BTLE_Services.audioCharacteristicUUID);
+
+            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                    Activity_BTLE_Services.accelerometerPitchUUID);
+
+            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                    Activity_BTLE_Services.accelerometerRollUUID);
         }
 
         /**
@@ -404,12 +410,12 @@ public class Service_BTLE_GATT extends Service {
     private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID) {
         BluetoothGattService mService = gatt.getService(UUID.fromString(serviceUUID));
         if(mService == null) {
-            Log.d(TAG, "couldn't find audio service");
+            Log.d(TAG, "couldn't find service: " + serviceUUID);
             return;
         }
         BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(characteristicUUID));
         if(mCharacteristic == null) {
-            Log.d(TAG, "Unable to read given audio characteristic.");
+            Log.d(TAG, "Unable to read given characteristic: " + characteristicUUID);
             return;
         }
 

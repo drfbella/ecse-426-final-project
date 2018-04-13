@@ -42,11 +42,10 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
      */
     public static final  String audioCharacteristicUUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; // TODO: configure audio characteristic UUID
 //    public static final  String audioCharacteristicUUID = "e893d43d-c166-4e77-9eCF-6f6f81d76006"; // TODO: configure audio characteristic UUID
-public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c"; // TODO: configure audio service UUID
-//    public static final  String audioServiceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
-    public static final  String accelerometerPitchUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; //TODO: configure accelerometer characteristic for pitch UUID
-    public static final  String accelerometerRollUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; //TODO: configure accelerometer characteristic for roll UUID
-    public static final  String accelerometerServiceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; //TODO: configure accelerometer service UUID
+public static final String serviceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c"; // TODO: configure audio service UUID
+//    public static final  String serviceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
+    public static final  String accelerometerPitchUUID = "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for pitch UUID
+    public static final  String accelerometerRollUUID =  "e33e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for roll UUID
 
     public static final byte[] accelerometerService = {(byte)0x03,(byte)0x36,(byte)0x6e,(byte)0x80,
             (byte)0xcf,(byte)0x3a, (byte)0x11,(byte)0xe1, (byte)0x9a,(byte)0xb4,
@@ -126,10 +125,8 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
             public void onClick(View v) {
                 // TODO: reconfigure this and requires testing
                 // TODO: read data in stream...
-                readDataFromCallBack(audioServiceUUID, audioCharacteristicUUID);
-//                readDataFromCallBack(audioServiceUUID, audioCharacteristicUUID);
-//                readDataFromCallBack(accelerometerServiceUUID, accelerometerRollUUID);
-//                readDataFromCallBack(audioServiceUUID, accelerometerPitchUUID);
+//                readDataFromCallBack(serviceUUID, audioCharacteristicUUID);
+                readDataFromCallBack(serviceUUID, accelerometerPitchUUID);
             }
         });
 
@@ -195,7 +192,7 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
             String uuid = characteristic.getUuid().toString();
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
-                characteristic.setValue("Hello my friend");
+                characteristic.setValue(new byte[]{1});
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
                 Log.d(TAG, "Wrote Hello my friend to " + characteristic.getUuid().toString());
             }
@@ -305,73 +302,6 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
         } else {
             BluetoothUtils.toast(this," The characteristic doesn't have read property!");
         }
-    }
-
-
-    public byte[] readAudio(){
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAudioService = mGatt.getService(UUID.fromString(audioServiceUUID));
-        if(mAudioService == null) {
-            Log.d(TAG, "coudln't find audio service");
-            return null;
-        }
-        BluetoothGattCharacteristic mAudioCharacteristic = mAudioService.getCharacteristic(UUID.fromString(audioCharacteristicUUID));
-        if(mAudioCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return null;
-        }
-        Log.d(TAG, "audio characteristic found was : " + mAudioCharacteristic.getUuid().toString());
-        return mAudioCharacteristic.getValue();
-    }
-
-    public byte[] readAccelerometerPitch() {
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAccelerometerService = mGatt.getService(UUID.fromString(accelerometerServiceUUID));
-        if(mAccelerometerService == null) {
-            Log.d(TAG, "coudln't find" +
-                    " accelerometer service");
-            return null;
-        }
-        BluetoothGattCharacteristic mAccelerometerCharacteristic = mAccelerometerService.getCharacteristic(UUID.fromString(accelerometerPitchUUID));
-        if(mAccelerometerCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return null;
-        }
-        Log.d(TAG, "audio characteristic found was : " + mAccelerometerCharacteristic.getUuid().toString());
-        return mAccelerometerCharacteristic.getValue();
-    }
-    public byte[] readAccelerometerRoll() {
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAccelerometerService = mGatt.getService(UUID.fromString(accelerometerRollUUID));
-        if(mAccelerometerService == null) {
-            Log.d(TAG, "coudln't find" +
-                    " accelerometer service");
-            return null;
-        }
-        BluetoothGattCharacteristic mAccelerometerCharacteristic = mAccelerometerService.getCharacteristic(UUID.fromString(accelerometerRollUUID));
-        if(mAccelerometerCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return null;
-        }
-        Log.d(TAG, "audio characteristic found was : " + mAccelerometerCharacteristic.getUuid().toString());
-        return mAccelerometerCharacteristic.getValue();
-    }
-
-    public void writeAccelerometer(byte[] data){
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAccelerometerService = mGatt.getService(UUID.fromString(audioServiceUUID));
-        if(mAccelerometerService == null) {
-            Log.d(TAG, "couldn't find accelerometer service");
-            return;
-        }
-        BluetoothGattCharacteristic mAccelerometerCharacteristic = mAccelerometerService.getCharacteristic(UUID.fromString(audioCharacteristicUUID));
-        if(mAccelerometerCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return;
-        }
-        mAccelerometerCharacteristic.setValue(data);
-        mBTLE_Service.writeCharacteristic(mAccelerometerCharacteristic);
-        // TODO: need to send the data too?
     }
 
     /**
