@@ -13,6 +13,8 @@ import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
 import com.group08.ecse426finalproject.speech.SpeechActivity;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
+import java.util.Arrays;
+
 import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
@@ -69,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
                 pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
                 rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
                 speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
-                Log.d(TAG, "speechData value is: " + new String(speechData));
+                Log.d(TAG, "speechData value is: " + Arrays.toString(speechData));
 //                Log.d(TAG, "onActivityResult in MainActivity");
             }
         }
