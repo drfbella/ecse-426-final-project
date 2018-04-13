@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.AuthFailureError;
@@ -48,6 +50,8 @@ public class AccelerometerActivity extends AppCompatActivity {
     private ResourceAccessor resourceAccessor;
     private TextView textPlotlyPitchLink;
     private TextView textPlotlyRollLink;
+    private ProgressBar pitchProgressBar;
+    private ProgressBar rollProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +71,9 @@ public class AccelerometerActivity extends AppCompatActivity {
 
         textPlotlyPitchLink = findViewById(R.id.text_pitch_plotly_link);
         textPlotlyRollLink = findViewById(R.id.text_roll_plotly_link);
+
+        pitchProgressBar = findViewById(R.id.pitch_progress_bar);
+        rollProgressBar = findViewById(R.id.roll_progress_bar);
 
         LineChart pitchChart = findViewById(R.id.pitch_chart);
         LineChart rollChart = findViewById(R.id.roll_chart);
@@ -188,6 +195,8 @@ public class AccelerometerActivity extends AppCompatActivity {
         queue.add(stringRequestGrids);
         textPlotlyPitchLink.setText(R.string.grid_request_sent);
         textPlotlyRollLink.setText(R.string.grid_request_sent);
+        pitchProgressBar.setProgress(1);
+        rollProgressBar.setProgress(1);
     }
 
     private void sendPitchRollPlotRequest(RequestQueue queue, JSONObject gridResponse) {
@@ -207,13 +216,15 @@ public class AccelerometerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        sendPlotRequest(queue, gridFID, timeColUID, pitchColUID, "rgb(255, 0, 0)", "pitch", textPlotlyPitchLink);
-        sendPlotRequest(queue, gridFID, timeColUID, rollColUID, "rgb(0, 0, 255)", "roll", textPlotlyRollLink);
+        sendPlotRequest(queue, gridFID, timeColUID, pitchColUID, "rgb(255, 0, 0)",
+                "pitch", textPlotlyPitchLink, pitchProgressBar);
+        sendPlotRequest(queue, gridFID, timeColUID, rollColUID, "rgb(0, 0, 255)",
+                "roll", textPlotlyRollLink, rollProgressBar);
     }
 
     private void sendPlotRequest(RequestQueue queue, String gridFID, String timeColUID,
                                  String dataColUID, String color, String dataName,
-                                 final TextView textLink) {
+                                 final TextView textLink, final ProgressBar progressBar) {
         JSONObject jsonGridData = null;
         try {
             jsonGridData = new JSONObject()
@@ -248,6 +259,8 @@ public class AccelerometerActivity extends AppCompatActivity {
                 try {
                     String plotlyURL = response.getJSONObject("file").getString("web_url");
                     textLink.setText(plotlyURL);
+                    progressBar.setProgress(3);
+                    progressBar.setVisibility(View.GONE);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -257,6 +270,7 @@ public class AccelerometerActivity extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         textLink.setText("Plotly plot request failed.");
+                        progressBar.setVisibility(View.GONE);
                     }
                 }) {
             @Override
@@ -271,5 +285,6 @@ public class AccelerometerActivity extends AppCompatActivity {
         };
         queue.add(stringRequestPlot);
         textLink.setText(R.string.plot_request_sent);
+        progressBar.setProgress(2);
     }
 }
