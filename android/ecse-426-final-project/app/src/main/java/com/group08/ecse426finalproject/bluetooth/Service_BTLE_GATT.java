@@ -90,7 +90,6 @@ public class Service_BTLE_GATT extends Service {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // update to broadcast
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
@@ -100,22 +99,9 @@ public class Service_BTLE_GATT extends Service {
             else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
-            BluetoothGattService mService = gatt.getService(UUID.fromString(Activity_BTLE_Services.audioServiceUUID));
-            if(mService == null) {
-                Log.d(TAG, "couldn't find audio service");
-                return;
-            }
-            BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID));
-            if(mCharacteristic == null) {
-                Log.d(TAG, "Unable to read given audio characteristic.");
-                return;
-            }
-            gatt.setCharacteristicNotification(mCharacteristic, true);
-//            if(BluetoothUtils.hasReadProperty(mCharacteristic.getProperties()) != 0){    // check write property
-//                if(gatt.readCharacteristic(mCharacteristic)) {   //read data
-//                    Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
-//                }
-//            }
+
+            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.audioServiceUUID,
+                    Activity_BTLE_Services.audioCharacteristicUUID);
         }
 
         /**
@@ -412,5 +398,46 @@ public class Service_BTLE_GATT extends Service {
         }
 
         return mBluetoothGatt.getServices();
+    }
+
+
+    private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID) {
+        BluetoothGattService mService = gatt.getService(UUID.fromString(serviceUUID));
+        if(mService == null) {
+            Log.d(TAG, "couldn't find audio service");
+            return;
+        }
+        BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(characteristicUUID));
+        if(mCharacteristic == null) {
+            Log.d(TAG, "Unable to read given audio characteristic.");
+            return;
+        }
+
+        if (BluetoothUtils.hasNotifyProperty(mCharacteristic.getProperties()) != 0) {
+            if (gatt.setCharacteristicNotification(mCharacteristic, true)) {
+                BluetoothGattDescriptor descriptor = mCharacteristic.getDescriptors().get(0);
+                if (0 != (mCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE)) {
+                    // It's an indicate characteristic
+                    Log.d("onServicesDiscovered", "Characteristic (" + mCharacteristic.getUuid() + ") is INDICATE");
+                    if (descriptor != null) {
+                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+                        gatt.writeDescriptor(descriptor);
+                    }
+                } else {
+                    // It's a notify characteristic
+                    Log.d("onServicesDiscovered", "Characteristic (" + mCharacteristic.getUuid() + ") is NOTIFY");
+                    if (descriptor != null) {
+                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                        gatt.writeDescriptor(descriptor);
+                    }
+                }
+            }
+        }
+
+//            if(BluetoothUtils.hasReadProperty(mCharacteristic.getProperties()) != 0){    // check write property
+//                if(gatt.readCharacteristic(mCharacteristic)) {   //read data
+//                    Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+//                }
+//            }
     }
 }

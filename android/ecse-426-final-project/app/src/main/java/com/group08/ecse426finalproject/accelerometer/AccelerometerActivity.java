@@ -23,6 +23,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.group08.ecse426finalproject.R;
+import com.group08.ecse426finalproject.utils.ByteUtils;
 import com.group08.ecse426finalproject.utils.ResourceAccessor;
 
 import org.json.JSONArray;
@@ -42,8 +43,6 @@ import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 
 public class AccelerometerActivity extends AppCompatActivity {
     private static final String TAG = "AccelerometerActivity";
-    private static final float PITCH_ROLL_RESOLUTION = 65_536f; // 16 bits of resolution
-    private static final int MAX_PITCH_ROLL_VALUE = 360;
     private static final int NUM_SAMPLES = 1000 + 1; // 10 seconds at 100 Hz
     private static final String PLOTLY_GRIDS_URL = "https://api.plot.ly/v2/grids";
     private static final String PLOTLY_PLOTS_URL = "https://api.plot.ly/v2/plots";
@@ -52,6 +51,7 @@ public class AccelerometerActivity extends AppCompatActivity {
     private TextView textPlotlyRollLink;
     private ProgressBar pitchProgressBar;
     private ProgressBar rollProgressBar;
+    private ByteUtils byteUtils;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +59,7 @@ public class AccelerometerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_accelerometer);
 
         resourceAccessor = new ResourceAccessor(this);
+        byteUtils = new ByteUtils();
 
         byte[] pitchData = getIntent().getByteArrayExtra(PITCH_DATA_NAME);
         byte[] rollData = getIntent().getByteArrayExtra(ROLL_DATA_NAME);
@@ -113,18 +114,6 @@ public class AccelerometerActivity extends AppCompatActivity {
         return data;
     }
 
-    private int twoBytesToUnsignedInt(byte b1, byte b2) {
-        return shortToUnsignedInt((short)((b1 << 8) | (b2 & 0xFF)));
-    }
-
-    private int shortToUnsignedInt(short s) {
-        return s & 0xFFFF;
-    }
-
-    private float twoBytesToPitchRollData(byte b1, byte b2) {
-        return (twoBytesToUnsignedInt(b1, b2) / PITCH_ROLL_RESOLUTION) * MAX_PITCH_ROLL_VALUE;
-    }
-
     private List<List<Float>> decodePitchRollData(byte[] pitchData, byte[] rollData) {
         List<Float> timeData = new ArrayList<>();
         List<Float> convertedPitchData = new ArrayList<>();
@@ -133,8 +122,8 @@ public class AccelerometerActivity extends AppCompatActivity {
         float t = 0;
         for (int i = 0; i < pitchData.length; i += 2) {
             timeData.add(t);
-            convertedPitchData.add(twoBytesToPitchRollData(pitchData[i], pitchData[i + 1]));
-            convertedRollData.add(twoBytesToPitchRollData(rollData[i], rollData[i + 1]));
+            convertedPitchData.add(byteUtils.twoBytesToPitchRollData(pitchData[i], pitchData[i + 1]));
+            convertedRollData.add(byteUtils.twoBytesToPitchRollData(rollData[i], rollData[i + 1]));
             t += 0.01;
         }
 

@@ -6,17 +6,22 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
+import com.group08.ecse426finalproject.utils.ByteUtils;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
+    private static final String TAG = "BLTE_GATT";
 
     private boolean mConnected = false;
 
     private Activity_BTLE_Services activity;
+    private ByteUtils byteUtils;
 
     public BroadcastReceiver_BTLE_GATT(Activity_BTLE_Services activity) {
         this.activity = activity;
+        byteUtils = new ByteUtils();
     }
 
     // Handles various events fired by the Service.
@@ -45,10 +50,15 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
 
             byte[] byteArray = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA);
 
+
+            //Log.d(TAG, "byteArray value is: " + Arrays.toString(byteArray));
+            int[] speechUnsigned = byteUtils.toUnsignedArray(byteArray);
+            Log.d(TAG, "byteArray unsigned value is: " + Arrays.toString(speechUnsigned));
+
             Log.d("ON RECEIVE DEBUG: " , intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID));
             if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).toString())){
                 Log.d("ON RECEIVE DEBUG: " , new String(byteArray));
-                activity.updateSpeechData(byteArray); //TODO: store in byte array?
+                activity.updateSpeechData(byteArray); // TODO: store in byte array?
             } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).toString())){
                 activity.updatePitchData(byteArray);
             } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).toString())){

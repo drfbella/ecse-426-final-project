@@ -21,6 +21,7 @@ import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -51,9 +52,9 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
             (byte)0xcf,(byte)0x3a, (byte)0x11,(byte)0xe1, (byte)0x9a,(byte)0xb4,
             (byte)0x20,(byte)0x02,(byte)0xa5,(byte)0xd5,(byte)0xc5,(byte)0x1c};
 
-    private byte[] pitchData = new byte[]{}; // TODO: Update accelerometer/speech data
-    private byte[] rollData = new byte[]{};
-    private byte[] speechData = new byte[]{};
+    private List<byte[]> pitchData = new ArrayList<>();
+    private List<byte[]> rollData = new ArrayList<>();
+    private List<byte[]> speechData = new ArrayList<>();
 
 
     // listView for services
@@ -192,7 +193,6 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
         // write-able property
         if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
             String uuid = characteristic.getUuid().toString();
-
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
                 characteristic.setValue("Hello my friend");
@@ -208,15 +208,20 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
 //
 //            dialog_btle_characteristic.show(getFragmentManager(), "Dialog_BTLE_Characteristic");
 //            speechData = characteristic.getValue();
-        } else if (BluetoothUtils.hasReadProperty(characteristic.getProperties()) != 0) {
-            if (mBTLE_Service != null) {
-                mBTLE_Service.readCharacteristic(characteristic);
-            }
-        } else if (BluetoothUtils.hasNotifyProperty(characteristic.getProperties()) != 0) {
-            if (mBTLE_Service != null) {
-                mBTLE_Service.setCharacteristicNotification(characteristic, true);
-            }
         }
+        else {
+            Log.d(TAG, characteristic.getUuid() + " Doesn't have write property");
+
+        }
+//        else if (BluetoothUtils.hasReadProperty(characteristic.getProperties()) != 0) {
+//            if (mBTLE_Service != null) {
+//                mBTLE_Service.readCharacteristic(characteristic);
+//            }
+//        } else if (BluetoothUtils.hasNotifyProperty(characteristic.getProperties()) != 0) {
+//            if (mBTLE_Service != null) {
+//                mBTLE_Service.setCharacteristicNotification(characteristic, true);
+//            }
+//        }
 
         return false;
     }
@@ -374,30 +379,43 @@ public static final  String audioServiceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5
      */
     @Override
     public void onBackPressed() {
-        Intent i = new Intent();
-        i.putExtra(PITCH_DATA_NAME, pitchData);
-        i.putExtra(ROLL_DATA_NAME, rollData);
-        i.putExtra(SPEECH_DATA_NAME, speechData);
-        setResult(BluetoothActivity.BTLE_SERVICES, i);
+        Intent intent = new Intent();
 
-        Log.d(TAG, "the extra data is " + new String(speechData));
+        byte[] bytePitchData = concatenateByteArrays(pitchData);
+        byte[] byteRollData = concatenateByteArrays(rollData);
+        byte[] byteSpeechData = concatenateByteArrays(speechData);
+
+        Log.d(TAG, "Number of speech bytes: " + byteSpeechData.length);
+        Log.d(TAG, "Speech data in BTLE: " + Arrays.toString(byteSpeechData));
+
+        intent.putExtra(PITCH_DATA_NAME, bytePitchData);
+        intent.putExtra(ROLL_DATA_NAME, byteRollData);
+        intent.putExtra(SPEECH_DATA_NAME, byteSpeechData);
+        setResult(BluetoothActivity.BTLE_SERVICES, intent);
 
         finish();
         super.onBackPressed();
     }
 
-    public void updateSpeechData(byte[] byteArrayExtra) {
-        this.speechData = byteArrayExtra;
-//        String test = new String(byteArrayExtra);
-//
-//        Log.d(TAG, test);
+    public void updateSpeechData(byte[] byteArray) {
+        this.speechData.add(byteArray);
     }
 
     public void updatePitchData(byte[] byteArray) {
-        this.pitchData = byteArray;
+        this.pitchData.add(byteArray);
     }
 
     public void updateRollData(byte[] byteArray) {
-        this.rollData = byteArray;
+        this.rollData.add(byteArray);
+    }
+
+    private byte[] concatenateByteArrays(List<byte[]> source) {
+        byte[] concatenatedBytes = new byte[source.size() * 20];
+        int i = 0;
+        for (byte[] data : source) {
+            System.arraycopy(data, 0, concatenatedBytes, i * 20, data.length);
+            i++;
+        }
+        return concatenatedBytes;
     }
 }

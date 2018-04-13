@@ -24,7 +24,7 @@ public class BroadcastReceiver_BTState extends BroadcastReceiver {
         final String action = intent.getAction();
 
 
-        if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
+        if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
             final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
 
             switch (state) {

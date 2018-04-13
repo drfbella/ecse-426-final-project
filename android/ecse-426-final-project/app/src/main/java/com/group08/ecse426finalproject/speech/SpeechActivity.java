@@ -23,6 +23,8 @@ import com.group08.ecse426finalproject.utils.ResourceAccessor;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
+
 public class SpeechActivity extends AppCompatActivity {
     private static final String TAG = "SpeechActivity";
     private static final String SPEECH_URL =
@@ -47,8 +49,8 @@ public class SpeechActivity extends AppCompatActivity {
         textFirebaseLink = findViewById(R.id.text_firebase_link);
         progressBar = findViewById(R.id.progress_bar);
 
-//        byte[] speechData = getIntent().getByteArrayExtra(SPEECH_DATA_NAME);
-        byte[] speechData = resourceAccessor.readRawResourceBytes(R.raw.audio);
+        byte[] speechData = getIntent().getByteArrayExtra(SPEECH_DATA_NAME);
+//        byte[] speechData = resourceAccessor.readRawResourceBytes(R.raw.audio);
 
         firebaseService.uploadBytesUnique(speechData, "audio/","raw", textFirebaseLink);
 

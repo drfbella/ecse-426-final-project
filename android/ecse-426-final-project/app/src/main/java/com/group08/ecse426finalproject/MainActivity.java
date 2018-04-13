@@ -12,6 +12,7 @@ import com.group08.ecse426finalproject.bluetooth.Activity_BTLE_Services;
 import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
 import com.group08.ecse426finalproject.speech.SpeechActivity;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
+import com.group08.ecse426finalproject.utils.ByteUtils;
 
 import java.util.Arrays;
 
@@ -71,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
                 pitchData = data.getByteArrayExtra(PITCH_DATA_NAME);
                 rollData = data.getByteArrayExtra(ROLL_DATA_NAME);
                 speechData = data.getByteArrayExtra(SPEECH_DATA_NAME);
-                Log.d(TAG, "speechData value is: " + Arrays.toString(speechData));
+                Log.d(TAG, "Speech data in MAIN: " + Arrays.toString(speechData));
 //                Log.d(TAG, "onActivityResult in MainActivity");
             }
         }
