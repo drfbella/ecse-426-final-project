@@ -7,6 +7,8 @@ import android.util.Log;
 
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
+import java.util.UUID;
+
 public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
 
     private boolean mConnected = false;
@@ -16,10 +18,6 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
     public BroadcastReceiver_BTLE_GATT(Activity_BTLE_Services activity) {
         this.activity = activity;
     }
-
-    public String data;
-    public String uuid;
-    public byte[] speechData;
 
     // Handles various events fired by the Service.
     // ACTION_GATT_CONNECTED: connected to a GATT server.
@@ -45,12 +43,17 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         }
         else if (Service_BTLE_GATT.ACTION_DATA_AVAILABLE.equals(action)) {
 
-//             uuid = intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID); // TODO: this stores the values to the appropriate characterstics...
-//             data = intent.getStringExtra(Service_BTLE_GATT.EXTRA_DATA);
-//            Log.d("DEBUG CHECK ONRECEIVE", data);
             byte[] byteArray = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA);
-            Log.d("ON RECEIVE DEBUG: " , new String(byteArray));
-            activity.updateSpeechData(byteArray); //TODO: store in byte array?
+
+            Log.d("ON RECEIVE DEBUG: " , intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID));
+            if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).toString())){
+                Log.d("ON RECEIVE DEBUG: " , new String(byteArray));
+                activity.updateSpeechData(byteArray); //TODO: store in byte array?
+            } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).toString())){
+                activity.updatePitchData(byteArray);
+            } else if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).toString())){
+                activity.updateRollData(byteArray);
+            }
 
             activity.updateCharacteristic();
         }

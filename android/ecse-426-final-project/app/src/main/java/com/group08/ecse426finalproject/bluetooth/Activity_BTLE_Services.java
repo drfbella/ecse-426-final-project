@@ -39,11 +39,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     /*
         ECSE-426-PROJECT SPECIFIC UUIDs
      */
-    public static final  String audioCharacteristicUUID = "E893D43D-C166-4E77-9ECF-6F6F81D76006"; // TODO: configure audio characteristic UUID
-    public static final  String audioServiceUUID = "7E12324C-4323-403F-AD58-85ED7D218CAC"; // TODO: configure audio service UUID
-    public static final  String accelerometerPitchUUID = "hi"; //TODO: configure accelerometer characteristic for pitch UUID
-    public static final  String accelerometerRollUUID = "yo"; //TODO: configure accelerometer characteristic for roll UUID
-    public static final  String accelerometerServiceUUID = "hii"; //TODO: configure accelerometer service UUID
+    public static final  String audioCharacteristicUUID = "e893d43d-c166-4e77-9eCF-6f6f81d76006"; // TODO: configure audio characteristic UUID
+    public static final  String audioServiceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
+    public static final  String accelerometerPitchUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; //TODO: configure accelerometer characteristic for pitch UUID
+    public static final  String accelerometerRollUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; //TODO: configure accelerometer characteristic for roll UUID
+    public static final  String accelerometerServiceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; //TODO: configure accelerometer service UUID
 
     private byte[] pitchData = new byte[]{}; // TODO: Update accelerometer/speech data
     private byte[] rollData = new byte[]{};
@@ -118,11 +118,10 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             @Override
             public void onClick(View v) {
                 // TODO: reconfigure this and requires testing
-
+                // TODO: read data in stream...
                 readDataFromCallBack(audioServiceUUID, audioCharacteristicUUID);
-//                speechData = readData(audioServiceUUID, audioCharacteristicUUID);
-//                rollData = readData(accelerometerServiceUUID, accelerometerRollUUID);
-//                pitchData = readData(accelerometerServiceUUID, accelerometerPitchUUID);
+//                readDataFromCallBack(accelerometerServiceUUID, accelerometerRollUUID);
+//                readDataFromCallBack(audioServiceUUID, accelerometerPitchUUID);
             }
         });
 
@@ -236,7 +235,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                     characteristics_HashMap.put(characteristic.getUuid().toString(), characteristic);
                     newCharacteristicsList.add(characteristic);
                 }
-
+                
                 characteristics_HashMapList.put(service.getUuid().toString(), newCharacteristicsList);
             }
 
@@ -287,9 +286,12 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             Log.d(TAG, "Unable to read given characteristic.");
             return;
         }
-
-        if(mGatt.readCharacteristic(mCharacteristic)) {   //read data
-            Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+        if(BluetoothUtils.hasReadProperty(mCharacteristic.getProperties()) != 0){    // check write property
+            if(mGatt.readCharacteristic(mCharacteristic)) {   //read data
+                Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+            }
+        } else {
+            BluetoothUtils.toast(this," The characteristic doesn't have read property!");
         }
     }
 
@@ -383,7 +385,12 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 //
 //        Log.d(TAG, test);
     }
-    public void updateSpeechData(String stringData){
-//        this.speechData = Byte.parseByte(stringData);
+
+    public void updatePitchData(byte[] byteArray) {
+        this.pitchData = byteArray;
+    }
+
+    public void updateRollData(byte[] byteArray) {
+        this.rollData = byteArray;
     }
 }

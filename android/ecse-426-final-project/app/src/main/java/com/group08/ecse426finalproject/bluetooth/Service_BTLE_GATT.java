@@ -162,10 +162,28 @@ public class Service_BTLE_GATT extends Service {
 
         intent.putExtra(EXTRA_UUID, characteristic.getUuid().toString());
 
+        // poll data from audio
+
         if(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).equals(characteristic.getUuid())){
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
 
             Log.d(TAG, "Added new data which is : " + new String(characteristic.getValue()));
+        }
+
+        // poll data from pitch
+
+        if(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).equals(characteristic.getUuid())){
+            intent.putExtra(EXTRA_DATA, characteristic.getValue());
+
+            Log.d(TAG, "Got new data from : " + characteristic.getUuid().toString());
+        }
+
+        // poll data from roll
+
+        if(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).equals(characteristic.getUuid())){
+            intent.putExtra(EXTRA_DATA, characteristic.getValue());
+
+            Log.d(TAG, "Got new data from : " + characteristic.getUuid().toString());
         }
 
         sendBroadcast(intent);
