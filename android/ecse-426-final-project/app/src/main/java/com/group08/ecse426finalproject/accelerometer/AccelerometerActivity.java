@@ -18,12 +18,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.Description;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.utils.ByteUtils;
+import com.group08.ecse426finalproject.utils.ChartCreator;
 import com.group08.ecse426finalproject.utils.ResourceAccessor;
 
 import org.json.JSONArray;
@@ -51,6 +48,7 @@ public class AccelerometerActivity extends AppCompatActivity {
     private ProgressBar pitchProgressBar;
     private ProgressBar rollProgressBar;
     private ByteUtils byteUtils;
+    private ChartCreator chartCreator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +57,7 @@ public class AccelerometerActivity extends AppCompatActivity {
 
         resourceAccessor = new ResourceAccessor(this);
         byteUtils = new ByteUtils();
+        chartCreator = new ChartCreator();
 
         byte[] pitchData = getIntent().getByteArrayExtra(PITCH_DATA_NAME);
         byte[] rollData = getIntent().getByteArrayExtra(ROLL_DATA_NAME);
@@ -87,27 +86,16 @@ public class AccelerometerActivity extends AppCompatActivity {
         Log.d(TAG, "Converted pitch data: " + convertedPitchData);
         Log.d(TAG, "Converted roll data: " + convertedRollData);
 
-        setChartData(pitchChart, timeData, convertedPitchData, "pitch", Color.RED);
-        setChartData(rollChart, timeData, convertedRollData, "roll", Color.BLUE);
-
-        sendPlotlyGridAndPlotRequest(timeData, convertedPitchData, convertedRollData);
-    }
-
-    private void setChartData(LineChart chart, List<Float> timeData, List<Float> measuredData,
-                              String label, int color) {
-        List<Entry> entries = new ArrayList<>();
-        for (int i = 0; i < timeData.size(); i += 2) {
-            entries.add(new Entry(timeData.get(i), measuredData.get(i)));
+        if (pitchData.length > 0) {
+            chartCreator.setChartData(pitchChart, timeData, convertedPitchData, "pitch", Color.RED);
         }
-        LineDataSet dataSet = new LineDataSet(entries, label);
-        dataSet.setColor(color);
-        dataSet.setCircleColor(color);
+        if (rollData.length > 0) {
+            chartCreator.setChartData(rollChart, timeData, convertedRollData, "roll", Color.BLUE);
+        }
 
-        chart.setData(new LineData(dataSet));
-        Description desc = new Description();
-        desc.setText("");
-        chart.setDescription(desc);
-        chart.invalidate();
+        if (pitchData.length > 0 && rollData.length > 0) {
+            sendPlotlyGridAndPlotRequest(timeData, convertedPitchData, convertedRollData);
+        }
     }
 
     private byte[] randomData(int length) {

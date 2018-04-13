@@ -1,6 +1,7 @@
 package com.group08.ecse426finalproject.speech;
 
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
@@ -15,13 +16,21 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.ScatterChart;
+import com.github.mikephil.charting.data.ScatterDataSet;
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.bluetooth.BluetoothTransmitter;
 import com.group08.ecse426finalproject.firebase.FirebaseService;
+import com.group08.ecse426finalproject.utils.ByteUtils;
+import com.group08.ecse426finalproject.utils.ChartCreator;
 import com.group08.ecse426finalproject.utils.ResourceAccessor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
@@ -31,10 +40,14 @@ public class SpeechActivity extends AppCompatActivity {
             "https://speech.googleapis.com/v1/speech:recognize?key=";
     private BluetoothTransmitter bluetoothTransmitter;
     private ResourceAccessor resourceAccessor;
+    private FirebaseService firebaseService;
+    private ByteUtils byteUtils;
+    private ChartCreator chartCreator;
+
     private TextView textTranscript;
     private TextView textFirebaseLink;
-    private FirebaseService firebaseService;
     private ProgressBar progressBar;
+    private ScatterChart audioChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +57,8 @@ public class SpeechActivity extends AppCompatActivity {
         bluetoothTransmitter = new BluetoothTransmitter();
         resourceAccessor = new ResourceAccessor(this);
         firebaseService = new FirebaseService();
+        byteUtils = new ByteUtils();
+        chartCreator = new ChartCreator();
 
         textTranscript = findViewById(R.id.text_transcript);
         textFirebaseLink = findViewById(R.id.text_firebase_link);
@@ -54,8 +69,8 @@ public class SpeechActivity extends AppCompatActivity {
 
         firebaseService.uploadBytesUnique(speechData, "audio/","raw", textFirebaseLink);
 
-//        sendGoogleSpeechTranscriptionRequest(speechData);
-        sendDemoRequestBytes();
+        sendGoogleSpeechTranscriptionRequest(speechData);
+//        sendDemoRequestBytes();
     }
 
     public void sendDemoRequestString() {

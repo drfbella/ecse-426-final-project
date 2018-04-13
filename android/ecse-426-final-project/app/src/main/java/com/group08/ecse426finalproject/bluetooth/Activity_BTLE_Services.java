@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT8;
 import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
@@ -188,9 +189,9 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             String uuid = characteristic.getUuid().toString();
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
-                characteristic.setValue(new byte[]{1});
+                characteristic.setValue(0b1, FORMAT_UINT8, 0);
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
-                Log.d(TAG, "Wrote Hello my friend to " + characteristic.getUuid().toString());
+                Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
             }
 
 //            Dialog_BTLE_Characteristic dialog_btle_characteristic = new Dialog_BTLE_Characteristic();
@@ -314,6 +315,12 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         Log.d(TAG, "Number of speech bytes: " + byteSpeechData.length);
         Log.d(TAG, "Speech data in BTLE: " + Arrays.toString(byteSpeechData));
 
+        Log.d(TAG, "Number of pitch bytes: " + bytePitchData.length);
+        Log.d(TAG, "pitch data in BTLE: " + Arrays.toString(bytePitchData));
+
+        Log.d(TAG, "Number of speech bytes: " + byteRollData.length);
+        Log.d(TAG, "Speech data in BTLE: " + Arrays.toString(byteRollData));
+
         intent.putExtra(PITCH_DATA_NAME, bytePitchData);
         intent.putExtra(ROLL_DATA_NAME, byteRollData);
         intent.putExtra(SPEECH_DATA_NAME, byteSpeechData);
@@ -321,6 +328,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 
         finish();
         super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     public void updateSpeechData(byte[] byteArray) {

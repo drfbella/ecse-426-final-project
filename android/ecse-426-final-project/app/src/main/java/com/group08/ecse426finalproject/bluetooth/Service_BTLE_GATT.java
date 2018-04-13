@@ -27,7 +27,7 @@ import java.util.UUID;
  */
 @TargetApi(18)
 public class Service_BTLE_GATT extends Service {
-    public static int notifyCounter = 0;
+    private int notifyCounter = 0;
     /*
      * Service for managing connection and data communication with a GATT server hosted on a
      * given Bluetooth LE device.
@@ -50,9 +50,6 @@ public class Service_BTLE_GATT extends Service {
     public final static String ACTION_DATA_AVAILABLE = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_UUID = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_UUID";
     public final static String EXTRA_DATA = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_DATA";
-
-    public static final String uuid_accelerometer_roll = "TODO";
-//    public static final UUID UUID_ACCELEROMETER_MEASUREMENT_ROLL = UUID.fromString(uuid_accelerometer_roll);
 
 
     // Implements callback methods for GATT events that the app cares about.  For example,
@@ -91,6 +88,7 @@ public class Service_BTLE_GATT extends Service {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+            notifyCounter = 0;
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // update to broadcast
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
@@ -103,8 +101,6 @@ public class Service_BTLE_GATT extends Service {
 
             setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
                     Activity_BTLE_Services.audioCharacteristicUUID, true);
-
-
         }
 
         /**
@@ -147,7 +143,6 @@ public class Service_BTLE_GATT extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-            Log.d(TAG, "Chacteristic changed: " + characteristic.getUuid().toString());
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
