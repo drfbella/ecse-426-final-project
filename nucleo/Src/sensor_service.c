@@ -59,7 +59,7 @@ volatile uint8_t notification_enabled = FALSE;
 volatile AxesRaw_t axes_data = {0, 0, 0};
 uint16_t sampleServHandle, TXCharHandle, RXCharHandle;
 uint16_t accServHandle, freeFallCharHandle, accCharHandle;
-uint16_t finalServHandle, rollPitchHandle, audioHandle, transferFlagHandle, returnHandle;
+uint16_t finalServHandle, rollHandle, pitchHandle, audioHandle, transferFlagHandle, returnHandle;
 uint16_t envSensServHandle, tempCharHandle, pressCharHandle, humidityCharHandle;
 
 #if NEW_SERVICES
@@ -91,9 +91,10 @@ do {\
   #define COPY_ACC_UUID(uuid_struct)          COPY_UUID_128(uuid_struct,0x03,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x00,0x02,0xa5,0xd5,0xc5,0x1b)
 
 	#define COPY_FINAL_SERVICE_UUID(uuid_struct)  	COPY_UUID_128(uuid_struct,0x03,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
-  #define COPY_ROLL_PITCH_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
-  #define COPY_AUDIO_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe4,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
-//  #define COPY_RETURN_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe5,0x3f,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_ROLL_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_PITCH_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe6,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+	#define COPY_AUDIO_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe4,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_RETURN_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe5,0x3f,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
   #define COPY_TRANSFER_FLAG_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x00,0x02,0xa5,0xd5,0xc5,0x1c)
 
 
@@ -118,9 +119,10 @@ do {\
 
 
 	#define COPY_FINAL_SERVICE_UUID(uuid_struct)  	COPY_UUID_128(uuid_struct,0x03,0x36,0x6e,0x80, 0xcf,0x3a, 0x11,0xe1, 0x9a,0xb4, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
-  #define COPY_ROLL_PITCH_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_ROLL_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_PITCH_UUID(uuid_struct)   		COPY_UUID_128(uuid_struct,0xe6,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
   #define COPY_AUDIO_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe4,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
-//  #define COPY_RETURN_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe5,0x3f,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
+  #define COPY_RETURN_UUID(uuid_struct)    				COPY_UUID_128(uuid_struct,0xe5,0x3f,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x20,0x02,0xa5,0xd5,0xc5,0x1c)
   #define COPY_TRANSFER_FLAG_UUID(uuid_struct)    COPY_UUID_128(uuid_struct,0xe3,0x3e,0x78,0xa0, 0xcf,0x4a, 0x11,0xe1, 0x8f,0xfc, 0x00,0x02,0xa5,0xd5,0xc5,0x1c)
 
 
@@ -156,14 +158,14 @@ tBleStatus Add_Final_Service(void)
 
   
   COPY_FINAL_SERVICE_UUID(uuid);
-  ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 10,
+  ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 20,
                           &finalServHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;    
 
 
 
   COPY_TRANSFER_FLAG_UUID(uuid);  
-  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
+  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 1,
                            CHAR_PROP_NOTIFY|CHAR_PROP_READ,
                            ATTR_PERMISSION_NONE,
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
@@ -172,12 +174,20 @@ tBleStatus Add_Final_Service(void)
 
   
 	
-  COPY_ROLL_PITCH_UUID(uuid);
+  COPY_ROLL_UUID(uuid);
   ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
                            CHAR_PROP_NOTIFY|CHAR_PROP_READ, ATTR_PERMISSION_NONE, GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
-                           16, 0, &rollPitchHandle);
+                           16, 0, &rollHandle);
+  if (ret != BLE_STATUS_SUCCESS) goto fail;
+
+ COPY_PITCH_UUID(uuid);
+  ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
+                           CHAR_PROP_NOTIFY|CHAR_PROP_READ, ATTR_PERMISSION_NONE, GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                           16, 0, &pitchHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;
   
+
+
 	
   COPY_AUDIO_UUID(uuid);  
   ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 20,
@@ -188,7 +198,7 @@ tBleStatus Add_Final_Service(void)
   if (ret != BLE_STATUS_SUCCESS) goto fail;
 	
 
-/*
+
   COPY_RETURN_UUID(uuid);  
   ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 1,
                            CHAR_PROP_NOTIFY|CHAR_PROP_READ|CHAR_PROP_WRITE,
@@ -196,9 +206,9 @@ tBleStatus Add_Final_Service(void)
                            GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
                            16, 0, &returnHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;
-*/
+
   
-  PRINTF("Service FINAL added. Handle 0x%04X, Roll and Pitch Charac handle: 0x%04X, AUDIO Charac handle: 0x%04X\n",finalServHandle, rollPitchHandle, audioHandle);	
+  PRINTF("Service FINAL added. Handle 0x%04X, Roll Charac handle: 0x%04X, AUDIO Charac handle: 0x%04X\n",finalServHandle, rollHandle, audioHandle);	
   return BLE_STATUS_SUCCESS; 
   
 fail:
@@ -241,16 +251,26 @@ tBleStatus RP_Update(void)
   tBleStatus ret;    
 	uint8_t buff[20];
 
+	int tempCountToPitch = 0;
 		
 	while(getNext20BytePacket(buff)){
-		ret = aci_gatt_update_char_value(finalServHandle, rollPitchHandle, 0, 20, buff);
-	
-		if (ret != BLE_STATUS_SUCCESS){
-			PRINTF("Error while updating roll pitch characteristic.\n") ;
-			return BLE_STATUS_ERROR ;
-		}
-	}
+		do{
+			if(tempCountToPitch < PITCH_START_INDEX){
+				ret = aci_gatt_update_char_value(finalServHandle, rollHandle, 0, 20, buff);
+			}else{
+				ret = aci_gatt_update_char_value(finalServHandle, pitchHandle, 0, 20, buff);
+			}
+				if (ret != BLE_STATUS_SUCCESS){
+				PRINTF("Error while updating roll pitch characteristic.\n") ;
+				return BLE_STATUS_ERROR ;
+			}
+			else{
+				tempCountToPitch++;
+			}
+			HAL_Delay(20);
 		
+		}while(ret!=BLE_STATUS_SUCCESS);
+	}
   return BLE_STATUS_SUCCESS;	
 }
 
@@ -260,21 +280,25 @@ tBleStatus RP_Update(void)
  *
  * @retval Status
  */
+int txCount = 0;
 tBleStatus AUDIO_Update(void)
 {  
   tBleStatus ret;    
 	uint8_t buff[20];
-
+txCount = 0;
 		
 	while(getNext20BytePacket(buff)){
 		do{
-		ret = aci_gatt_update_char_value(finalServHandle, audioHandle, 0, 20, buff);
+			ret = aci_gatt_update_char_value(finalServHandle, audioHandle, 0, 20, buff);
 	
-		if (ret != BLE_STATUS_SUCCESS){
-			PRINTF("Error while updating audio characteristic.\n") ;
-			return BLE_STATUS_ERROR ;
-		}
-	}while(ret!=BLE_STATUS_SUCCESS);
+			if (ret != BLE_STATUS_SUCCESS){
+				PRINTF("Error while updating audio characteristic.\n") ;
+				return BLE_STATUS_ERROR ;
+			}
+			HAL_Delay(20);
+		
+		}while(ret!=BLE_STATUS_SUCCESS);
+		txCount++;
 	}
   return BLE_STATUS_SUCCESS;	
 }
@@ -340,6 +364,14 @@ tBleStatus Free_Fall_Notify(void)
     return BLE_STATUS_ERROR ;
   }
   return BLE_STATUS_SUCCESS;	
+}
+
+uint8_t listenForResponse(void){
+	uint8_t toRet = 0;
+	uint16_t len = 1;
+//	aci_gatt_read_charac_val(connection_handle, returnHandle);
+	aci_gatt_read_handle_value(returnHandle, 1, &len, &toRet);
+	return toRet;
 }
 
 /**
@@ -573,7 +605,7 @@ void setConnectable(void)
 {  
   tBleStatus ret;
   
-  const char local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME,'B','l','u','e','N','R','G'};
+  const char local_name[] = {AD_TYPE_COMPLETE_LOCAL_NAME,'G','R','8','D','O','O','M'};
   
   /* disable scan response */
   hci_le_set_scan_resp_data(0,NULL);

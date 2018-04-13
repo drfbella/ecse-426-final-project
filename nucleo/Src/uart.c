@@ -7,9 +7,9 @@
 
 #define TX_BUFFER_SIZE 1 //size of buffer used for transmitting
 #define RX_BUFFER_SIZE 32001 //size of buffer used for recieving
-#define AUDIO_MAX_INDEX 32000
-#define ROLL_MAX_INDEX 2000
-#define PITCH_MAX_INDEX 4000
+#define AUDIO_MAX_INDEX 32001
+#define ROLL_MAX_INDEX 2001
+#define PITCH_MAX_INDEX 4001
 #define BLE_PACKET_SIZE 20
 
 UART_HandleTypeDef uart_handle;

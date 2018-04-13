@@ -128,7 +128,7 @@ tBleStatus TRANSFER_FLAG_Notify(int value);
 tBleStatus RP_Update(void);
 tBleStatus AUDIO_Update(void);
 
-
+uint8_t listenForResponse(void);
 #if NEW_SERVICES
   tBleStatus Add_Time_Service(void);
   tBleStatus Seconds_Update(void);

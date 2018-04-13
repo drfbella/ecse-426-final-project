@@ -69,6 +69,7 @@ extern volatile int connected;
 extern AxesRaw_t axes_data;
 uint8_t bnrg_expansion_board = IDB04A1; /* at startup, suppose the X-NUCLEO-IDB04A1 is used */
 uint8_t transmissionType = 0;
+uint8_t resp = 0;
 /**
  * @}
  */
@@ -108,7 +109,7 @@ uint8_t processUART(uint8_t type);
  */
 int main(void)
 {
-  const char *name = "BlueNRG";
+  const char *name = "GR8DOOM";
   uint8_t SERVER_BDADDR[] = {0x03, 0x03, 0x03, 0xE1, 0x80, 0x03};
   uint8_t bdaddr[BDADDR_SIZE];
   uint16_t service_handle, dev_name_char_handle, appearance_char_handle;
@@ -305,9 +306,10 @@ uint8_t processUART(uint8_t type){
 		case TRANSMISSION_TYPE_AUDIO:
 			AUDIO_Update();
 			TRANSFER_FLAG_Notify(1);
-			
+			HAL_Delay(1000);
+			resp = listenForResponse();
 		//todo listen
-		return 3;
+			return resp;
 		
 	case TRANSMISSION_TYPE_ROLLPITCH:
 			RP_Update();
