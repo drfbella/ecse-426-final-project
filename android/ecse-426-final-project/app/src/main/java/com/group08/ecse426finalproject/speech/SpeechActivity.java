@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.android.volley.Request;
@@ -15,12 +17,11 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.bluetooth.BluetoothTransmitter;
+import com.group08.ecse426finalproject.firebase.FirebaseService;
 import com.group08.ecse426finalproject.utils.ResourceAccessor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
 public class SpeechActivity extends AppCompatActivity {
     private static final String TAG = "SpeechActivity";
@@ -29,6 +30,9 @@ public class SpeechActivity extends AppCompatActivity {
     private BluetoothTransmitter bluetoothTransmitter;
     private ResourceAccessor resourceAccessor;
     private TextView textTranscript;
+    private TextView textFirebaseLink;
+    private FirebaseService firebaseService;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +41,18 @@ public class SpeechActivity extends AppCompatActivity {
 
         bluetoothTransmitter = new BluetoothTransmitter();
         resourceAccessor = new ResourceAccessor(this);
+        firebaseService = new FirebaseService();
 
         textTranscript = findViewById(R.id.text_transcript);
+        textFirebaseLink = findViewById(R.id.text_firebase_link);
+        progressBar = findViewById(R.id.progress_bar);
 
-        byte[] speechData = getIntent().getByteArrayExtra(SPEECH_DATA_NAME);
-        //sendGoogleSpeechTranscriptionRequest(speechData);
-        sendDemoRequestBytes();
+//        byte[] speechData = getIntent().getByteArrayExtra(SPEECH_DATA_NAME);
+        byte[] speechData = resourceAccessor.readRawResourceBytes(R.raw.audio);
+
+        firebaseService.uploadBytesUnique(speechData, "audio/","raw", textFirebaseLink);
+
+        sendGoogleSpeechTranscriptionRequest(speechData);
     }
 
     public void sendDemoRequestString() {
@@ -80,6 +90,7 @@ public class SpeechActivity extends AppCompatActivity {
                     Log.d(TAG, "Transcript: " + transcript);
                     textTranscript.setText(transcript);
                     bluetoothTransmitter.transmitString(transcript);
+                    progressBar.setVisibility(View.GONE);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -87,9 +98,11 @@ public class SpeechActivity extends AppCompatActivity {
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                progressBar.setVisibility(View.GONE);
                 Log.d(TAG, "POST failed: " + error.getMessage() + ", " + error.toString());
             }
         });
         queue.add(jsonObjectRequest);
+        progressBar.setVisibility(View.VISIBLE);
     }
 }

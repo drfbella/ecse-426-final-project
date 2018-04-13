@@ -4,6 +4,7 @@ package com.group08.ecse426finalproject.firebase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -42,7 +43,34 @@ public class FirebaseService {
                 });
     }
 
+    public void uploadBytes(byte[] bytes, String path, final TextView linkTextView)
+    {
+        storageRef.child(path).putBytes(bytes)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Log.d(TAG, "Uploaded URL: " + downloadUrl);
+                        if (downloadUrl != null) {
+                            linkTextView.setText(downloadUrl.toString());
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d(TAG, "Upload failed");
+                    }
+                });
+    }
+
     public void uploadBytesUnique(final byte[] bytes, final String path, final String extension) {
         uploadBytes(bytes, path + (System.currentTimeMillis() / 1000) + '.' + extension);
+    }
+
+    public void uploadBytesUnique(final byte[] bytes, final String path, final String extension,
+                                  TextView linkTextView) {
+        uploadBytes(bytes, path + (System.currentTimeMillis() / 1000) + '.' + extension,
+                linkTextView);
     }
 }
