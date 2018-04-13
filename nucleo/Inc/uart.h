@@ -3,7 +3,7 @@
 #include <stdint.h>
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
-#define PITCH_START_INDEX 2001
+#define PITCH_START_INDEX 100
 
 void transmit(uint8_t response);
 void UART_Initialize(void);
