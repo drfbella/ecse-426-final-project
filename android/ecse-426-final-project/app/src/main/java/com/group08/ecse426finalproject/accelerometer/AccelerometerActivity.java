@@ -123,10 +123,12 @@ public class AccelerometerActivity extends AppCompatActivity {
         List<Float> convertedPitchData = new ArrayList<>();
         List<Float> convertedRollData = new ArrayList<>();
 
+        float t = 0;
         for (int i = 0; i < pitchData.length; i += 2) {
-            timeData.add(i * 0.01f);
+            timeData.add(t);
             convertedPitchData.add(twoBytesToPitchRollData(pitchData[i], pitchData[i + 1]));
             convertedRollData.add(twoBytesToPitchRollData(rollData[i], rollData[i + 1]));
+            t += 0.01;
         }
 
         List<List<Float>> columns = new ArrayList<>();
@@ -168,7 +170,10 @@ public class AccelerometerActivity extends AppCompatActivity {
         },
                 new Response.ErrorListener() {
                     @Override
-                    public void onErrorResponse(VolleyError error) {}
+                    public void onErrorResponse(VolleyError error) {
+                        textPlotlyPitchLink.setText("Plotly grid request failed.");
+                        textPlotlyRollLink.setText("Plotly grid request failed.");
+                    }
                 }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -227,6 +232,8 @@ public class AccelerometerActivity extends AppCompatActivity {
                                                     .put("size", 10))
                                             .put("type", "scatter")
                                             .put("name", dataName)
+                                            .put("xaxis", "time")
+                                            .put("yaxis", dataName)
                                     )))
                     .put("world_readable", true);
         } catch (JSONException e) {
@@ -248,7 +255,9 @@ public class AccelerometerActivity extends AppCompatActivity {
         },
                 new Response.ErrorListener() {
                     @Override
-                    public void onErrorResponse(VolleyError error) {}
+                    public void onErrorResponse(VolleyError error) {
+                        textLink.setText("Plotly plot request failed.");
+                    }
                 }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
