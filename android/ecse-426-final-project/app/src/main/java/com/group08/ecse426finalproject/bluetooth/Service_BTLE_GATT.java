@@ -146,7 +146,7 @@ public class Service_BTLE_GATT extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-
+            Log.d(TAG, "Chacteristic changed: " + characteristic.getUuid().toString());
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
