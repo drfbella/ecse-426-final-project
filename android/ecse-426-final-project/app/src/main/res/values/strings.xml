@@ -20,4 +20,6 @@
     <string name="firebase_audio_link">[Firebase Audio Link]</string>
     <string name="transcript_title">Transcript</string>
     <string name="firebase_link_title">Firebase Link</string>
+    <string name="pitch_roll">Pitch/Roll</string>
+    <string name="speech_button">Speech</string>
 </resources>
