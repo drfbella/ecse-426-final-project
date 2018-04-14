@@ -6,7 +6,7 @@
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
 #define TX_BUFFER_SIZE 32001 //size of buffer used for transmitting
-#define RX_BUFFER_SIZE 5 //size of buffer used for recieving
+#define RX_BUFFER_SIZE 1 //size of buffer used for recieving
 
 //pin tx A2, rx   on stm32f407
 

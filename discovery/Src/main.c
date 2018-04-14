@@ -86,6 +86,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	//printf("audio %i \n", audioBuffer[audioBufferIndex]);
 	audioBufferIndex++;
 	if(audioBufferIndex >= AUDIO_BUFFER_SIZE){
+		HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET); //turn off recording LED		
 		HAL_ADC_Stop_IT(&hadc1); 
 		HAL_TIM_Base_Stop(&htim2);
 		//TODO can also deinit this		
@@ -146,10 +147,17 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 						case 1:
 							readAudioForOneDone = 0;
 							audioBufferIndex = 0;
+						//flash all the lights to prepare for recording
+							for(int i = 0; i < 3; i++){
+									HAL_GPIO_WritePin(GPIOD, led_pins[0]|led_pins[1]|led_pins[2], GPIO_PIN_SET);
+									HAL_Delay(300);
+									HAL_GPIO_WritePin(GPIOD, led_pins[0]|led_pins[1]|led_pins[2], GPIO_PIN_RESET);
+									HAL_Delay(300);								
+							}
+							HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);						
 							HAL_TIM_Base_Start(&htim2);
 							HAL_ADC_Start_IT(&hadc1);
 							State = STATE_RECORD_AUDIO;
-							HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);
 							tapCount = 0;							
 							break;
 					}
@@ -158,7 +166,6 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 				case STATE_RECORD_AUDIO:
 				// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer
 				if(readAudioForOneDone){// 1 second  has elapsed			
-					HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET); //turn off recording LED
 					transmitFreakinHugeAudioArray(audioBuffer,AUDIO_BUFFER_SIZE);
 					State = STATE_RECIEVE_RESPONSE;
 				}
@@ -321,9 +328,9 @@ static void MX_TIM2_Init(void)
   TIM_MasterConfigTypeDef sMasterConfig;
 
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 1051;
+  htim2.Init.Prescaler = 263;//TODO CHECK THIS
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 11;
+  htim2.Init.Period = 18;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
