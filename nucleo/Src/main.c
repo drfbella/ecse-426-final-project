@@ -278,9 +278,6 @@ int main(void)
     transmissionType = recieveMessage();
 		if(transmissionType){
 			uint8_t ret = processUART(transmissionType);
-			if(transmissionType == TRANSMISSION_TYPE_AUDIO){
-				transmit(ret);
-			}
 		}
     HCI_Process();
     User_Process(&axes_data);
@@ -306,8 +303,8 @@ uint8_t processUART(uint8_t type){
 		case TRANSMISSION_TYPE_AUDIO:
 			AUDIO_Update();
 			TRANSFER_FLAG_Notify(1);
-			HAL_Delay(1000);
-			resp = listenForResponse();
+			HAL_Delay(1000);//wait for response
+			return 0;
 		//todo listen
 			return resp;
 		

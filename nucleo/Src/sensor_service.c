@@ -135,6 +135,7 @@ do {\
 /* Store Value into a buffer in Little Endian Format */
 #define STORE_LE_16(buf, val)    ( ((buf)[0] =  (uint8_t) (val)    ) , \
                                    ((buf)[1] =  (uint8_t) (val>>8) ) )
+#define DELAY 5
 /**
  * @}
  */
@@ -154,8 +155,6 @@ tBleStatus Add_Final_Service(void)
   tBleStatus ret;
 
   uint8_t uuid[16];
-
-
   
   COPY_FINAL_SERVICE_UUID(uuid);
   ret = aci_gatt_add_serv(UUID_TYPE_128,  uuid, PRIMARY_SERVICE, 20,
@@ -275,7 +274,7 @@ tBleStatus RP_Update(void)
 				tempCountToPitch++;
 				txCount++;
 			}
-			HAL_Delay(20);
+			HAL_Delay(DELAY);
 		
 		}while(ret!=BLE_STATUS_SUCCESS);
 	}
@@ -302,12 +301,24 @@ txCount = 0;
 				PRINTF("Error while updating audio characteristic.\n") ;
 				//return BLE_STATUS_ERROR ;
 			}
-			HAL_Delay(20);
+			HAL_Delay(DELAY);
 		
 		}while(ret!=BLE_STATUS_SUCCESS);
 		txCount++;
 	}
   return BLE_STATUS_SUCCESS;	
+}
+
+
+//TODO instead of this, mark to notify on attribute change 
+//but check this works first
+tBleStatus listenForResponse(void){
+	tBleStatus ret = 0;
+	ret = aci_gatt_read_charac_val(connection_handle, returnHandle);
+	if(ret != BLE_STATUS_SUCCESS){
+		printf("failure is always an option\n");
+	}
+	return ret;
 }
 
 
@@ -373,13 +384,6 @@ tBleStatus Free_Fall_Notify(void)
   return BLE_STATUS_SUCCESS;	
 }
 
-uint8_t listenForResponse(void){
-	uint8_t toRet = 0;
-	uint16_t len = 1;
-//	aci_gatt_read_charac_val(connection_handle, returnHandle);
-	aci_gatt_read_handle_value(returnHandle, 1, &len, &toRet);
-	return toRet;
-}
 
 /**
  * @brief  Update acceleration characteristic value.
@@ -663,7 +667,7 @@ void GAP_DisconnectionComplete_CB(void)
  * @retval None
  */
 void Read_Request_CB(uint16_t handle)
-{  
+{  	
   if(handle == accCharHandle + 1){
     Acc_Update((AxesRaw_t*)&axes_data);
   }  
@@ -757,6 +761,16 @@ void HCI_Event_CB(void *pckt)
         break; 
 #endif
 
+			//in the case that an item has been read, 
+			case EVT_BLUE_ATT_READ_RESP:{
+					//should be characteristic return
+					//TODO put some check for which characteristic
+					evt_att_read_resp *pr = (void*)blue_evt->data;
+					uint8_t*response;
+					response = pr-> attribute_value;
+					transmit(response[0]);							
+				break;
+			}
       case EVT_BLUE_GATT_READ_PERMIT_REQ:
         {
           evt_gatt_read_permit_req *pr = (void*)blue_evt->data;                    
