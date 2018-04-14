@@ -22,4 +22,5 @@
     <string name="firebase_link_title">Firebase Link</string>
     <string name="pitch_roll">Pitch/Roll</string>
     <string name="speech_button">Speech</string>
+    <string name="transcription_error">[Unable to transcribe number.]</string>
 </resources>

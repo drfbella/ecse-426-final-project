@@ -284,7 +284,7 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
     /**
      *  Sean imports
      */
-    private byte[] pitchData = new byte[]{}; // TODO: Update accelerometer/speech data
+    private byte[] pitchData = new byte[]{};
     private byte[] rollData = new byte[]{};
     private byte[] speechData = new byte[]{};
 

@@ -3,7 +3,6 @@ package com.group08.ecse426finalproject.speech;
 import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
-import android.view.View;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -55,7 +54,19 @@ public class SpeechService {
                             .getJSONObject(0).getJSONArray("alternatives")
                             .getJSONObject(0).getString("transcript");
                     Log.d(TAG, "Transcript: " + transcript);
-                    speechResponseHandler.handleSpeechResponse(transcript);
+                    if (transcript == null || transcript.isEmpty()) {
+                        speechResponseHandler.handleSpeechErrorResponse();
+                        return;
+                    }
+
+                    int parsedTranscript;
+                    try {
+                        parsedTranscript = Integer.parseInt(transcript);
+                    } catch (NumberFormatException e) {
+                        speechResponseHandler.handleSpeechErrorResponse();
+                        return;
+                    }
+                    speechResponseHandler.handleSpeechResponse(parsedTranscript);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

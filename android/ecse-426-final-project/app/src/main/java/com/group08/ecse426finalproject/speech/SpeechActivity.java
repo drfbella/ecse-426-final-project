@@ -50,13 +50,14 @@ public class SpeechActivity extends AppCompatActivity {
 
         speechService.sendGoogleSpeechTranscriptionRequest(speechData, new SpeechResponseHandler() {
             @Override
-            public void handleSpeechResponse(String transcript) {
+            public void handleSpeechResponse(int transcript) {
                 textTranscript.setText(transcript);
                 progressBar.setVisibility(View.GONE);
             }
 
             @Override
             public void handleSpeechErrorResponse() {
+                textTranscript.setText(R.string.transcription_error);
                 progressBar.setVisibility(View.GONE);
             }
         });

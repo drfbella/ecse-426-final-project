@@ -92,15 +92,14 @@ public class Service_BTLE_GATT extends Service {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // update to broadcast
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-                // TODO: can implement automatic data polling on services discovered
                 Log.d(TAG, "services discovered, can now press on store values");
             }
             else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
 
-            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
-                    Activity_BTLE_Services.audioCharacteristicUUID, true);
+            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.SERVICE_UUID,
+                    Activity_BTLE_Services.AUDIO_CHARACTERISTIC_UUID, true);
         }
 
         /**
@@ -125,12 +124,12 @@ public class Service_BTLE_GATT extends Service {
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             if(notifyCounter == 0) {
-                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
-                        Activity_BTLE_Services.accelerometerPitchUUID, true);
+                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.SERVICE_UUID,
+                        Activity_BTLE_Services.PITCH_CHARACTERISTIC_UUID, true);
                 notifyCounter ++;
             } else if (notifyCounter == 1) {
-                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
-                        Activity_BTLE_Services.accelerometerRollUUID, true);
+                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.SERVICE_UUID,
+                        Activity_BTLE_Services.ROLL_CHARACTERISTIC_UUID, true);
                 notifyCounter++;
             }
         }
@@ -176,7 +175,7 @@ public class Service_BTLE_GATT extends Service {
 
         // poll data from audio
 
-        if(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).equals(characteristic.getUuid())){
+        if(UUID.fromString(Activity_BTLE_Services.AUDIO_CHARACTERISTIC_UUID).equals(characteristic.getUuid())){
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
 
             Log.d(TAG, "Added new data which is : " + new String(characteristic.getValue()));
@@ -184,7 +183,7 @@ public class Service_BTLE_GATT extends Service {
 
         // poll data from pitch
 
-        if(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).equals(characteristic.getUuid())){
+        if(UUID.fromString(Activity_BTLE_Services.PITCH_CHARACTERISTIC_UUID).equals(characteristic.getUuid())){
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
 
             Log.d(TAG, "Got new data from : " + characteristic.getUuid().toString());
@@ -192,7 +191,7 @@ public class Service_BTLE_GATT extends Service {
 
         // poll data from roll
 
-        if(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).equals(characteristic.getUuid())){
+        if(UUID.fromString(Activity_BTLE_Services.ROLL_CHARACTERISTIC_UUID).equals(characteristic.getUuid())){
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
 
             Log.d(TAG, "Got new data from : " + characteristic.getUuid().toString());
@@ -383,7 +382,7 @@ public class Service_BTLE_GATT extends Service {
         mBluetoothGatt.setCharacteristicNotification(characteristic, enabled);
 
         BluetoothGattDescriptor descriptor = characteristic.getDescriptor(
-                UUID.fromString(getString(R.string.CLIENT_CHARACTERISTIC_CONFIG))); //TODO: read about this
+                UUID.fromString(getString(R.string.CLIENT_CHARACTERISTIC_CONFIG)));
 
         if (enabled) {
             descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);

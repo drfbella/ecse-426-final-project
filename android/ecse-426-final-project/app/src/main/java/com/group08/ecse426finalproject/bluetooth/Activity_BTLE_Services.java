@@ -8,16 +8,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
-import com.group08.ecse426finalproject.MainActivity;
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.accelerometer.AccelerometerActivity;
 import com.group08.ecse426finalproject.speech.SpeechResponseHandler;
@@ -45,12 +44,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     /*
         ECSE-426-PROJECT SPECIFIC UUIDs
      */
-    public static final  String audioCharacteristicUUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; // TODO: configure audio characteristic UUID
-    public static final  String accelerometerPitchUUID = "e73e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for pitch UUID
-    public static final  String accelerometerRollUUID =  "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for roll UUID
-    public static final  String serviceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c"; // TODO: configure audio service UUID
-    //    public static final  String audioCharacteristicUUID = "e893d43d-c166-4e77-9eCF-6f6f81d76006"; // TODO: configure audio characteristic UUID
-    //    public static final  String serviceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
+    public static final String SERVICE_UUID              = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c";
+    public static final String AUDIO_CHARACTERISTIC_UUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
+    public static final String PITCH_CHARACTERISTIC_UUID = "e73e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
+    public static final String ROLL_CHARACTERISTIC_UUID  = "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
+    public static final String WRITE_CHARACTERISTIC_UUID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
 
     private List<byte[]> pitchData = new ArrayList<>();
     private List<byte[]> rollData = new ArrayList<>();
@@ -129,10 +127,8 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         buttonStoreValues.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: reconfigure this and requires testing
-                // TODO: read data in stream...
-//                readDataFromCallBack(serviceUUID, audioCharacteristicUUID);
-                readDataFromCallBack(serviceUUID, accelerometerPitchUUID);
+//                readDataFromCallBack(SERVICE_UUID, AUDIO_CHARACTERISTIC_UUID);
+                readDataFromCallBack(SERVICE_UUID, PITCH_CHARACTERISTIC_UUID);
             }
         });
 
@@ -144,14 +140,14 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                 speechService.sendGoogleSpeechTranscriptionRequest(byteSpeechData,
                         new SpeechResponseHandler() {
                     @Override
-                    public void handleSpeechResponse(String transcript) {
+                    public void handleSpeechResponse(int transcribedNumber) {
                         BluetoothGatt mGatt = mBTLE_Service.getGatt();
-                        BluetoothGattService mService = mGatt.getService(UUID.fromString(serviceUUID));
+                        BluetoothGattService mService = mGatt.getService(UUID.fromString(SERVICE_UUID));
                         if(mService == null) {
                             Log.d(TAG, "couldn't find service");
                             return;
                         }
-                        BluetoothGattCharacteristic characteristic = mService.getCharacteristic(UUID.fromString(audioCharacteristicUUID));
+                        BluetoothGattCharacteristic characteristic = mService.getCharacteristic(UUID.fromString(WRITE_CHARACTERISTIC_UUID));
                         if(characteristic == null) {
                             Log.d(TAG, "Unable to read given characteristic.");
                             return;
@@ -162,7 +158,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                             String uuid = characteristic.getUuid().toString();
                             Log.d(TAG, "Clicked on a characteristic " + uuid);
                             if (mBTLE_Service != null) {
-                                characteristic.setValue((~Integer.parseInt(transcript)) + 1, FORMAT_UINT8, 0);
+                                characteristic.setValue(transcribedNumber, FORMAT_UINT8, 0);
                                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
                                 updateCharacteristic();
                                 Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
@@ -240,7 +236,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     }
 
     /*
-        Sets up activity for chosen characteristics //TODO: review
+        Sets up activity for chosen characteristics
      */
     @Override
     public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
@@ -248,14 +244,13 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         BluetoothGattCharacteristic characteristic = characteristics_HashMapList.get(
                 services_ArrayList.get(groupPosition).getUuid().toString())
                 .get(childPosition);
-        // TODO: implement fire base connection here, for read and write
 
         // write-able property
         if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
             String uuid = characteristic.getUuid().toString();
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
-                characteristic.setValue(0b1, FORMAT_UINT8, 0);
+                characteristic.setValue(0b1, FORMAT_UINT8, 0); // Testing purposes
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
                 updateCharacteristic();
                 Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
