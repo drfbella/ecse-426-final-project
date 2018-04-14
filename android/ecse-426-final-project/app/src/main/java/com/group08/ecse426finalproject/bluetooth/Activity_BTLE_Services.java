@@ -17,14 +17,20 @@ import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.TextView;
 
+import com.group08.ecse426finalproject.MainActivity;
 import com.group08.ecse426finalproject.R;
+import com.group08.ecse426finalproject.accelerometer.AccelerometerActivity;
+import com.group08.ecse426finalproject.speech.SpeechResponseHandler;
+import com.group08.ecse426finalproject.speech.SpeechService;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
+import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT8;
 import static com.group08.ecse426finalproject.utils.Constants.PITCH_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
@@ -39,15 +45,16 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     /*
         ECSE-426-PROJECT SPECIFIC UUIDs
      */
-    public static final  String audioCharacteristicUUID = "E893D43D-C166-4E77-9ECF-6F6F81D76006"; // TODO: configure audio characteristic UUID
-    public static final  String audioServiceUUID = "7E12324C-4323-403F-AD58-85ED7D218CAC"; // TODO: configure audio service UUID
-    public static final  String accelerometerPitchUUID = "hi"; //TODO: configure accelerometer characteristic for pitch UUID
-    public static final  String accelerometerRollUUID = "yo"; //TODO: configure accelerometer characteristic for roll UUID
-    public static final  String accelerometerServiceUUID = "hii"; //TODO: configure accelerometer service UUID
+    public static final  String audioCharacteristicUUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; // TODO: configure audio characteristic UUID
+    public static final  String accelerometerPitchUUID = "e73e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for pitch UUID
+    public static final  String accelerometerRollUUID =  "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c"; //TODO: configure accelerometer characteristic for roll UUID
+    public static final  String serviceUUID = "03366e80-cf3a-11e1-9ab4-2002a5d5c51c"; // TODO: configure audio service UUID
+    //    public static final  String audioCharacteristicUUID = "e893d43d-c166-4e77-9eCF-6f6f81d76006"; // TODO: configure audio characteristic UUID
+    //    public static final  String serviceUUID = "7e12324c-4323-403f-ad58-85ed7d218cAc"; // TODO: configure audio service UUID
 
-    private byte[] pitchData = new byte[]{}; // TODO: Update accelerometer/speech data
-    private byte[] rollData = new byte[]{};
-    private byte[] speechData = new byte[]{};
+    private List<byte[]> pitchData = new ArrayList<>();
+    private List<byte[]> rollData = new ArrayList<>();
+    private List<byte[]> speechData = new ArrayList<>();
 
 
     // listView for services
@@ -63,11 +70,14 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     private Service_BTLE_GATT mBTLE_Service;
     private boolean mBTLE_Service_Bound;
     private BroadcastReceiver_BTLE_GATT mGattUpdateReceiver;
+    private SpeechService speechService;
 
     private String name;
     private String address;
 
-    Button buttonStoreValues;
+    private Button buttonStoreValues;
+    private Button buttonSpeech;
+    private Button buttonPitchRoll;
 
     // service connection
     private ServiceConnection mBTLE_ServiceConnection = new ServiceConnection() {
@@ -112,20 +122,77 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         characteristics_HashMap = new HashMap<>();
         characteristics_HashMapList = new HashMap<>();
 
+        speechService = new SpeechService(this);
+
         buttonStoreValues = findViewById(R.id.btn_storeValues);
         buttonStoreValues.setVisibility(View.INVISIBLE);
         buttonStoreValues.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO: reconfigure this and requires testing
-
-                readDataFromCallBack(audioServiceUUID, audioCharacteristicUUID);
-//                speechData = readData(audioServiceUUID, audioCharacteristicUUID);
-//                rollData = readData(accelerometerServiceUUID, accelerometerRollUUID);
-//                pitchData = readData(accelerometerServiceUUID, accelerometerPitchUUID);
+                // TODO: read data in stream...
+//                readDataFromCallBack(serviceUUID, audioCharacteristicUUID);
+                readDataFromCallBack(serviceUUID, accelerometerPitchUUID);
             }
         });
 
+        buttonSpeech = findViewById(R.id.button_speech);
+        buttonSpeech.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                byte[] byteSpeechData = concatenateByteArrays(speechData);
+                speechService.sendGoogleSpeechTranscriptionRequest(byteSpeechData,
+                        new SpeechResponseHandler() {
+                    @Override
+                    public void handleSpeechResponse(String transcript) {
+                        BluetoothGatt mGatt = mBTLE_Service.getGatt();
+                        BluetoothGattService mService = mGatt.getService(UUID.fromString(serviceUUID));
+                        if(mService == null) {
+                            Log.d(TAG, "couldn't find service");
+                            return;
+                        }
+                        BluetoothGattCharacteristic characteristic = mService.getCharacteristic(UUID.fromString(audioCharacteristicUUID));
+                        if(characteristic == null) {
+                            Log.d(TAG, "Unable to read given characteristic.");
+                            return;
+                        }
+
+                        // write-able property
+                        if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
+                            String uuid = characteristic.getUuid().toString();
+                            Log.d(TAG, "Clicked on a characteristic " + uuid);
+                            if (mBTLE_Service != null) {
+                                characteristic.setValue((~Integer.parseInt(transcript)) + 1, FORMAT_UINT8, 0);
+                                mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
+                                updateCharacteristic();
+                                Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
+                            }
+                        }
+                        else {
+                            Log.d(TAG, characteristic.getUuid() + " Doesn't have write property");
+
+                        }
+                    }
+
+                    @Override
+                    public void handleSpeechErrorResponse() {
+                    }
+                });
+            }
+        });
+
+        buttonPitchRoll = findViewById(R.id.button_pitch_roll);
+        buttonPitchRoll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(Activity_BTLE_Services.this, AccelerometerActivity.class);
+                byte[] bytePitchData = concatenateByteArrays(pitchData);
+                byte[] byteRollData = concatenateByteArrays(rollData);
+                i.putExtra(PITCH_DATA_NAME, bytePitchData);
+                i.putExtra(ROLL_DATA_NAME, byteRollData);
+                startActivity(i);
+            }
+        });
 
         // list view for services
         expandableListAdapter = new ListAdapter_BTLE_Services(
@@ -186,12 +253,12 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         // write-able property
         if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
             String uuid = characteristic.getUuid().toString();
-
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
-                characteristic.setValue("Hello my friend");
+                characteristic.setValue(0b1, FORMAT_UINT8, 0);
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
-                Log.d(TAG, "Wrote Hello my friend to " + characteristic.getUuid().toString());
+                updateCharacteristic();
+                Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
             }
 
 //            Dialog_BTLE_Characteristic dialog_btle_characteristic = new Dialog_BTLE_Characteristic();
@@ -202,15 +269,20 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 //
 //            dialog_btle_characteristic.show(getFragmentManager(), "Dialog_BTLE_Characteristic");
 //            speechData = characteristic.getValue();
-        } else if (BluetoothUtils.hasReadProperty(characteristic.getProperties()) != 0) {
-            if (mBTLE_Service != null) {
-                mBTLE_Service.readCharacteristic(characteristic);
-            }
-        } else if (BluetoothUtils.hasNotifyProperty(characteristic.getProperties()) != 0) {
-            if (mBTLE_Service != null) {
-                mBTLE_Service.setCharacteristicNotification(characteristic, true);
-            }
         }
+        else {
+            Log.d(TAG, characteristic.getUuid() + " Doesn't have write property");
+
+        }
+//        else if (BluetoothUtils.hasReadProperty(characteristic.getProperties()) != 0) {
+//            if (mBTLE_Service != null) {
+//                mBTLE_Service.readCharacteristic(characteristic);
+//            }
+//        } else if (BluetoothUtils.hasNotifyProperty(characteristic.getProperties()) != 0) {
+//            if (mBTLE_Service != null) {
+//                mBTLE_Service.setCharacteristicNotification(characteristic, true);
+//            }
+//        }
 
         return false;
     }
@@ -236,7 +308,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                     characteristics_HashMap.put(characteristic.getUuid().toString(), characteristic);
                     newCharacteristicsList.add(characteristic);
                 }
-
+                
                 characteristics_HashMapList.put(service.getUuid().toString(), newCharacteristicsList);
             }
 
@@ -287,77 +359,13 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             Log.d(TAG, "Unable to read given characteristic.");
             return;
         }
-
-        if(mGatt.readCharacteristic(mCharacteristic)) {   //read data
-            Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+        if(BluetoothUtils.hasReadProperty(mCharacteristic.getProperties()) != 0){    // check write property
+            if(mGatt.readCharacteristic(mCharacteristic)) {   //read data
+                Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+            }
+        } else {
+            BluetoothUtils.toast(this," The characteristic doesn't have read property!");
         }
-    }
-
-
-    public byte[] readAudio(){
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAudioService = mGatt.getService(UUID.fromString(audioServiceUUID));
-        if(mAudioService == null) {
-            Log.d(TAG, "coudln't find audio service");
-            return null;
-        }
-        BluetoothGattCharacteristic mAudioCharacteristic = mAudioService.getCharacteristic(UUID.fromString(audioCharacteristicUUID));
-        if(mAudioCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return null;
-        }
-        Log.d(TAG, "audio characteristic found was : " + mAudioCharacteristic.getUuid().toString());
-        return mAudioCharacteristic.getValue();
-    }
-
-    public byte[] readAccelerometerPitch() {
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAccelerometerService = mGatt.getService(UUID.fromString(accelerometerServiceUUID));
-        if(mAccelerometerService == null) {
-            Log.d(TAG, "coudln't find" +
-                    " accelerometer service");
-            return null;
-        }
-        BluetoothGattCharacteristic mAccelerometerCharacteristic = mAccelerometerService.getCharacteristic(UUID.fromString(accelerometerPitchUUID));
-        if(mAccelerometerCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return null;
-        }
-        Log.d(TAG, "audio characteristic found was : " + mAccelerometerCharacteristic.getUuid().toString());
-        return mAccelerometerCharacteristic.getValue();
-    }
-    public byte[] readAccelerometerRoll() {
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAccelerometerService = mGatt.getService(UUID.fromString(accelerometerRollUUID));
-        if(mAccelerometerService == null) {
-            Log.d(TAG, "coudln't find" +
-                    " accelerometer service");
-            return null;
-        }
-        BluetoothGattCharacteristic mAccelerometerCharacteristic = mAccelerometerService.getCharacteristic(UUID.fromString(accelerometerRollUUID));
-        if(mAccelerometerCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return null;
-        }
-        Log.d(TAG, "audio characteristic found was : " + mAccelerometerCharacteristic.getUuid().toString());
-        return mAccelerometerCharacteristic.getValue();
-    }
-
-    public void writeAccelerometer(byte[] data){
-        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-        BluetoothGattService mAccelerometerService = mGatt.getService(UUID.fromString(audioServiceUUID));
-        if(mAccelerometerService == null) {
-            Log.d(TAG, "couldn't find accelerometer service");
-            return;
-        }
-        BluetoothGattCharacteristic mAccelerometerCharacteristic = mAccelerometerService.getCharacteristic(UUID.fromString(audioCharacteristicUUID));
-        if(mAccelerometerCharacteristic == null) {
-            Log.d(TAG, "Unable to read audio.");
-            return;
-        }
-        mAccelerometerCharacteristic.setValue(data);
-        mBTLE_Service.writeCharacteristic(mAccelerometerCharacteristic);
-        // TODO: need to send the data too?
     }
 
     /**
@@ -365,25 +373,54 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
      */
     @Override
     public void onBackPressed() {
-        Intent i = new Intent();
-        i.putExtra(PITCH_DATA_NAME, pitchData);
-        i.putExtra(ROLL_DATA_NAME, rollData);
-        i.putExtra(SPEECH_DATA_NAME, speechData);
-        setResult(BluetoothActivity.BTLE_SERVICES, i);
+        Intent intent = new Intent();
 
-        Log.d(TAG, "the extra data is " + new String(speechData));
+        byte[] bytePitchData = concatenateByteArrays(pitchData);
+        byte[] byteRollData = concatenateByteArrays(rollData);
+        byte[] byteSpeechData = concatenateByteArrays(speechData);
+
+        Log.d(TAG, "Number of speech bytes: " + byteSpeechData.length);
+        Log.d(TAG, "Speech data in BTLE: " + Arrays.toString(byteSpeechData));
+
+        Log.d(TAG, "Number of pitch bytes: " + bytePitchData.length);
+        Log.d(TAG, "pitch data in BTLE: " + Arrays.toString(bytePitchData));
+
+        Log.d(TAG, "Number of speech bytes: " + byteRollData.length);
+        Log.d(TAG, "Speech data in BTLE: " + Arrays.toString(byteRollData));
+
+        intent.putExtra(PITCH_DATA_NAME, bytePitchData);
+        intent.putExtra(ROLL_DATA_NAME, byteRollData);
+        intent.putExtra(SPEECH_DATA_NAME, byteSpeechData);
+        setResult(BluetoothActivity.BTLE_SERVICES, intent);
 
         finish();
         super.onBackPressed();
     }
 
-    public void updateSpeechData(byte[] byteArrayExtra) {
-        this.speechData = byteArrayExtra;
-//        String test = new String(byteArrayExtra);
-//
-//        Log.d(TAG, test);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
-    public void updateSpeechData(String stringData){
-//        this.speechData = Byte.parseByte(stringData);
+
+    public void updateSpeechData(byte[] byteArray) {
+        this.speechData.add(byteArray);
+    }
+
+    public void updatePitchData(byte[] byteArray) {
+        this.pitchData.add(byteArray);
+    }
+
+    public void updateRollData(byte[] byteArray) {
+        this.rollData.add(byteArray);
+    }
+
+    private byte[] concatenateByteArrays(List<byte[]> source) {
+        byte[] concatenatedBytes = new byte[source.size() * 20];
+        int i = 0;
+        for (byte[] data : source) {
+            System.arraycopy(data, 0, concatenatedBytes, i * 20, data.length);
+            i++;
+        }
+        return concatenatedBytes;
     }
 }

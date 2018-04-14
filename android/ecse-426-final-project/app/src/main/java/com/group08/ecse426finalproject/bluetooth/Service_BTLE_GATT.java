@@ -27,6 +27,7 @@ import java.util.UUID;
  */
 @TargetApi(18)
 public class Service_BTLE_GATT extends Service {
+    private int notifyCounter = 0;
     /*
      * Service for managing connection and data communication with a GATT server hosted on a
      * given Bluetooth LE device.
@@ -49,9 +50,6 @@ public class Service_BTLE_GATT extends Service {
     public final static String ACTION_DATA_AVAILABLE = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.ACTION_DATA_AVAILABLE";
     public final static String EXTRA_UUID = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_UUID";
     public final static String EXTRA_DATA = "com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT.EXTRA_DATA";
-
-    public static final String uuid_accelerometer_roll = "TODO";
-//    public static final UUID UUID_ACCELEROMETER_MEASUREMENT_ROLL = UUID.fromString(uuid_accelerometer_roll);
 
 
     // Implements callback methods for GATT events that the app cares about.  For example,
@@ -90,7 +88,7 @@ public class Service_BTLE_GATT extends Service {
 
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-
+            notifyCounter = 0;
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 // update to broadcast
                 broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
@@ -100,6 +98,9 @@ public class Service_BTLE_GATT extends Service {
             else {
                 Log.w(TAG, "onServicesDiscovered received: " + status);
             }
+
+            setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                    Activity_BTLE_Services.audioCharacteristicUUID, true);
         }
 
         /**
@@ -121,6 +122,18 @@ public class Service_BTLE_GATT extends Service {
             }
         }
 
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            if(notifyCounter == 0) {
+                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                        Activity_BTLE_Services.accelerometerPitchUUID, true);
+                notifyCounter ++;
+            } else if (notifyCounter == 1) {
+                setNotificationForCharacteristic(gatt, Activity_BTLE_Services.serviceUUID,
+                        Activity_BTLE_Services.accelerometerRollUUID, true);
+                notifyCounter++;
+            }
+        }
 
         /**
          *  Called on characteristic changed, update data
@@ -130,7 +143,6 @@ public class Service_BTLE_GATT extends Service {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt,
                                             BluetoothGattCharacteristic characteristic) {
-
             broadcastUpdate(ACTION_DATA_AVAILABLE, characteristic);
         }
 
@@ -162,10 +174,28 @@ public class Service_BTLE_GATT extends Service {
 
         intent.putExtra(EXTRA_UUID, characteristic.getUuid().toString());
 
+        // poll data from audio
+
         if(UUID.fromString(Activity_BTLE_Services.audioCharacteristicUUID).equals(characteristic.getUuid())){
             intent.putExtra(EXTRA_DATA, characteristic.getValue());
 
             Log.d(TAG, "Added new data which is : " + new String(characteristic.getValue()));
+        }
+
+        // poll data from pitch
+
+        if(UUID.fromString(Activity_BTLE_Services.accelerometerPitchUUID).equals(characteristic.getUuid())){
+            intent.putExtra(EXTRA_DATA, characteristic.getValue());
+
+            Log.d(TAG, "Got new data from : " + characteristic.getUuid().toString());
+        }
+
+        // poll data from roll
+
+        if(UUID.fromString(Activity_BTLE_Services.accelerometerRollUUID).equals(characteristic.getUuid())){
+            intent.putExtra(EXTRA_DATA, characteristic.getValue());
+
+            Log.d(TAG, "Got new data from : " + characteristic.getUuid().toString());
         }
 
         sendBroadcast(intent);
@@ -378,5 +408,49 @@ public class Service_BTLE_GATT extends Service {
         }
 
         return mBluetoothGatt.getServices();
+    }
+
+
+    private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID, boolean set) {
+        BluetoothGattService mService = gatt.getService(UUID.fromString(serviceUUID));
+        if(mService == null) {
+            Log.d(TAG, "couldn't find service: " + serviceUUID);
+            return;
+        }
+        BluetoothGattCharacteristic mCharacteristic = mService.getCharacteristic(UUID.fromString(characteristicUUID));
+        if(mCharacteristic == null) {
+            Log.d(TAG, "Unable to read given characteristic: " + characteristicUUID);
+            return;
+        }
+
+        if (BluetoothUtils.hasNotifyProperty(mCharacteristic.getProperties()) != 0) {
+            if (gatt.setCharacteristicNotification(mCharacteristic, set)) {
+                BluetoothGattDescriptor descriptor = mCharacteristic.getDescriptors().get(0);
+                if (0 != (mCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE)) {
+                    // It's an indicate characteristic
+                    Log.d("onServicesDiscovered", "Characteristic (" + mCharacteristic.getUuid() + ") is INDICATE");
+                    if (descriptor != null) {
+                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE);
+                        gatt.writeDescriptor(descriptor);
+                    }
+                } else {
+                    // It's a notify characteristic
+                    Log.d("onServicesDiscovered", "Characteristic (" + mCharacteristic.getUuid() + ") is NOTIFY");
+                    if (descriptor != null) {
+                        Log.d(TAG, "Descriptor is not null for: " +  mCharacteristic.getUuid());
+                        if(descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE))
+                            Log.d(TAG, "Descriptor set for: " +  mCharacteristic.getUuid());
+                        if(gatt.writeDescriptor(descriptor))
+                            Log.d(TAG, "Descriptor Notified for: " +  mCharacteristic.getUuid());
+                    }
+                }
+            }
+        }
+
+//            if(BluetoothUtils.hasReadProperty(mCharacteristic.getProperties()) != 0){    // check write property
+//                if(gatt.readCharacteristic(mCharacteristic)) {   //read data
+//                    Log.d(TAG, "Successfully read " + mCharacteristic.getUuid().toString());
+//                }
+//            }
     }
 }

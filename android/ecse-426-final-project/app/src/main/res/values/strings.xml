@@ -6,9 +6,20 @@
     <string name="scan_again">Scan again.</string>
     <string name="scanning">Scanning</string>
     <string name="no_name">Device has no name.</string>
-    <string name="CLIENT_CHARACTERISTIC_CONFIG">To be determined...</string>
+    <string name="CLIENT_CHARACTERISTIC_CONFIG">To be determined…</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="speech">Speech</string>
     <string name="accelerometer">Accelerometer</string>
     <string name="store_values">Store Values</string>
+    <string name="pitch_plotly_link_text">[Pitch Plotly Link]</string>
+    <string name="roll_plotly_link_text">[Roll Plotly Link]</string>
+    <string name="grid_request_sent">Grid request sent…</string>
+    <string name="plot_request_sent">Plot request sent…</string>
+    <string name="speech_request_sent">Speech API request sent…</string>
+    <string name="transcript">[Transcript]</string>
+    <string name="firebase_audio_link">[Firebase Audio Link]</string>
+    <string name="transcript_title">Transcript</string>
+    <string name="firebase_link_title">Firebase Link</string>
+    <string name="pitch_roll">Pitch/Roll</string>
+    <string name="speech_button">Speech</string>
 </resources>
