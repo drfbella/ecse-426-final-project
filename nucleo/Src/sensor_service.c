@@ -254,7 +254,7 @@ int txCount = 0;
 
 tBleStatus RP_Update(void)
 {  
-	 txCount = 0;
+	txCount = 0;
   tBleStatus ret;    
 
 	int tempCountToPitch = 0;
@@ -291,18 +291,15 @@ tBleStatus AUDIO_Update(void)
 {  
   tBleStatus ret;    
 	//uint8_t buff[20];
-txCount = 0;
-		
+txCount = 0; //for debugging		
 	while(getNext20BytePacket(buff)){
 		do{
 			ret = aci_gatt_update_char_value(finalServHandle, audioHandle, 0, 20, buff);
 	
 			if (ret != BLE_STATUS_SUCCESS){
 				PRINTF("Error while updating audio characteristic.\n") ;
-				//return BLE_STATUS_ERROR ;
 			}
-			HAL_Delay(DELAY);
-		
+			HAL_Delay(DELAY);		
 		}while(ret!=BLE_STATUS_SUCCESS);
 		txCount++;
 	}

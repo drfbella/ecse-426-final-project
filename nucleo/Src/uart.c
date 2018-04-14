@@ -7,20 +7,30 @@
 
 #define TX_BUFFER_SIZE 1 //size of buffer used for transmitting
 #define RX_BUFFER_SIZE 32001 //size of buffer used for recieving
-#define AUDIO_MAX_INDEX 32001
-#define ROLL_MAX_INDEX 2001
-#define PITCH_MAX_INDEX 4001
-#define BLE_PACKET_SIZE 20
+
+#define AUDIO_MAX_INDEX 32001 //if transmission type was audio, it will take 32000 bytes (first byte is transmission type)
+#define ROLL_MAX_INDEX 2001 //if transmission type was roll/pitch, it will take the first 2000 bytes for roll (first byte is transmission type
+#define PITCH_MAX_INDEX 4001 //and the next 2000 bytes for pitch
+
 
 UART_HandleTypeDef uart_handle;
 
-uint8_t txBuffer[TX_BUFFER_SIZE];
-uint8_t rxBuffer[RX_BUFFER_SIZE];
+uint8_t txBuffer[TX_BUFFER_SIZE]; // somewhere to store messages to transmit
+uint8_t rxBuffer[RX_BUFFER_SIZE]; // somewhere to store received messages
 
+//Need to forward received messages to BLE
+#define BLE_PACKET_SIZE 20 
+int pending = 0;
+int indexOfPending = 1;
+
+
+/**
+  * @brief  Initializes USART1 in async mode
+  * @param  none
+  * @retval none
+*/	
 void UART_Initialize(void)
 {
-//  HAL_UART_MspInit(&uart_handle);
-
 	__HAL_RCC_USART1_CLK_ENABLE();
   
 	uart_handle.Instance = USART1;
@@ -36,11 +46,7 @@ void UART_Initialize(void)
 	if (HAL_UART_Init(&uart_handle) != HAL_OK)
 	{
 		printf("uart not initialized\n");
-		//Print statements for possible errors. Errors to be determined see main 347
-	}
-	
-//	HAL_NVIC_SetPriority(USART1_IRQn, 0, 1);
-//  HAL_NVIC_EnableIRQ(USART1_IRQn);
+	}	
 }
 
 
@@ -50,7 +56,6 @@ void UART_Initialize(void)
   * @param  response: integer to be transmitted
   * @retval None
   */
-
 void transmit(uint8_t response){
 	txBuffer[0] = response;
 	while(HAL_OK != HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT)){
@@ -63,8 +68,6 @@ void transmitTest(){
 	transmit(55);
 }
 
-int pending = 0;
-int indexOfPending = 1;
 /**
   * @brief  Calls HAL_UART_Receive. If a message was received, checks if it is a roll/pitch or an audio message 
   * @param  None
@@ -77,18 +80,13 @@ uint8_t recieveMessage(){
     }
 	else{
 		if(rxBuffer[0] == TRANSMISSION_TYPE_AUDIO){
-			//update audio
-			//send BLE
-			// response BLE
+			//mark a pending transmission
 			pending = TRANSMISSION_TYPE_AUDIO;
+			//[0] is the transmission type
 			indexOfPending = 1;
-		//	transmit(3); //TODO remove this is for testing transmit
 		}else if(rxBuffer[0] == TRANSMISSION_TYPE_ROLLPITCH){
-			//update roll and ptch
-			//transmit BLE
 			pending = TRANSMISSION_TYPE_ROLLPITCH;
 			indexOfPending = 1;
-			transmit(UINT8_MAX);
 		}			
 	}
 	return rxBuffer[0];
@@ -112,32 +110,8 @@ int getNext20BytePacket(uint8_t*packet){
 	if(indexOfPending <= maxIndex-BLE_PACKET_SIZE){ // check just in case
 		memcpy(packet,&rxBuffer[indexOfPending], BLE_PACKET_SIZE);//just brute force set address of packet to chunk of rx buffer
 		indexOfPending+=BLE_PACKET_SIZE;//increment index
-/*		if(indexOfPending > maxIndex){ // check again - if we have now surpassed the index, set pending to 0 (no packets left)
-			printf("%d", indexOfPending);
-			pending = 0;
-			indexOfPending = 1;
-		}*/
 	}else{
 		pending = 0;
 	}	
 	return pending;
 }
-
-
-
-//Do we need/want interrupts? try with polling first
-
-//interupt callbacks
-//if using them need HAL_UART_Receive_IT(&uart_handle, (uint8_t *)rxBuffer, RX_BUFFER_SIZE)
-//and wait for done maybe.
-//same for transmit
-
-/*
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-}
-*/

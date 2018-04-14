@@ -275,10 +275,11 @@ int main(void)
 	
   while(1)
   {
-    transmissionType = recieveMessage();
+    transmissionType = recieveMessage(); //listen for uart transmission
 		if(transmissionType){
-			uint8_t ret = processUART(transmissionType);
+			uint8_t ret = processUART(transmissionType); 
 		}
+		//lleave everything else as it was cause no time to clean up all the sample code
     HCI_Process();
     User_Process(&axes_data);
 #if NEW_SERVICES
@@ -287,35 +288,34 @@ int main(void)
   }
 }
 
-
+/**
+  * @brief  forwards a received uart transmission to BLE
+  * @param  type of transmission (audio or roll/pitch)
+  * @retval none
+*/	
 uint8_t processUART(uint8_t type){
 
   if(set_connectable){
     setConnectable();
     set_connectable = FALSE;
   }  
-    if(connected)
-    {
+  if(connected){
 
-	//clear transmission flag
-	TRANSFER_FLAG_Notify(0);
-	switch(type){
-		case TRANSMISSION_TYPE_AUDIO:
-			AUDIO_Update();
-			TRANSFER_FLAG_Notify(1);
-			HAL_Delay(1000);//wait for response
-			return 0;
-		//todo listen
-			return resp;
-		
-	case TRANSMISSION_TYPE_ROLLPITCH:
-			RP_Update();
-			TRANSFER_FLAG_Notify(1);
-			return 0;
+		TRANSFER_FLAG_Notify(0);	//clear transmission flag
+		switch(type){
+			case TRANSMISSION_TYPE_AUDIO:
+				AUDIO_Update();
+				TRANSFER_FLAG_Notify(1); //flag that the transmission has ended 
+				HAL_Delay(1000);//give time to wait for response
+				listenForResponse();//todo let it notify
+				return 0;
+		case TRANSMISSION_TYPE_ROLLPITCH:
+				RP_Update();
+				TRANSFER_FLAG_Notify(1);
+				return 0;
+		}
 	}
-}
 	return 0;
-	//send end of transmission flag?
 }
 
 /**
