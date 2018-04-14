@@ -184,6 +184,7 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 				case STATE_RECIEVE_RESPONSE:
 				// wait till integer N arrives from nucleo board
 				// Blink LED2 blue N times
+				HAL_Delay(32000); //need a long delay, to allow the nucleo to have time to transmit BLE message
 				N = receiveResponseInt();
 				for (int i = 0; i < N; i++){
 					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);		
@@ -194,13 +195,7 @@ HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
 				counter = 0;
 				State = STATE_DETECT_TAP;
 				break;		
-		}
-		
-		//TODO, for testing, delete later
-//		transmitTest();
-//		HAL_Delay(20);
-//		receiveTest();
-	
+		}	
 	}
 }
 /** System Clock Configuration
