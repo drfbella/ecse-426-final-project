@@ -19,7 +19,7 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.github.mikephil.charting.charts.LineChart;
 import com.group08.ecse426finalproject.R;
-import com.group08.ecse426finalproject.utils.ByteUtils;
+import com.group08.ecse426finalproject.utils.ByteManipulator;
 import com.group08.ecse426finalproject.utils.ChartCreator;
 import com.group08.ecse426finalproject.utils.ResourceAccessor;
 
@@ -47,7 +47,7 @@ public class AccelerometerActivity extends AppCompatActivity {
     private TextView textPlotlyRollLink;
     private ProgressBar pitchProgressBar;
     private ProgressBar rollProgressBar;
-    private ByteUtils byteUtils;
+    private ByteManipulator byteManipulator;
     private ChartCreator chartCreator;
 
     @Override
@@ -56,7 +56,7 @@ public class AccelerometerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_accelerometer);
 
         resourceAccessor = new ResourceAccessor(this);
-        byteUtils = new ByteUtils();
+        byteManipulator = new ByteManipulator();
         chartCreator = new ChartCreator();
 
         byte[] pitchData = getIntent().getByteArrayExtra(PITCH_DATA_NAME);
@@ -112,8 +112,8 @@ public class AccelerometerActivity extends AppCompatActivity {
         float t = 0;
         for (int i = 0; i < pitchData.length; i += 2) {
             timeData.add(t);
-            convertedPitchData.add(byteUtils.twoBytesToPitchRollData(pitchData[i], pitchData[i + 1]));
-            convertedRollData.add(byteUtils.twoBytesToPitchRollData(rollData[i], rollData[i + 1]));
+            convertedPitchData.add(byteManipulator.twoBytesToPitchRollData(pitchData[i], pitchData[i + 1]));
+            convertedRollData.add(byteManipulator.twoBytesToPitchRollData(rollData[i], rollData[i + 1]));
             t += 0.01;
         }
 

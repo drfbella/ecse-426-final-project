@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.group08.ecse426finalproject.utils.BluetoothUtils;
+import com.group08.ecse426finalproject.utils.ToastShower;
 
 /**
  * Toasts messages regarding bluetooth state
@@ -29,16 +29,16 @@ public class BroadcastReceiver_BTState extends BroadcastReceiver {
 
             switch (state) {
                 case BluetoothAdapter.STATE_OFF:
-                    BluetoothUtils.toast(activityContext, "Bluetooth is off");
+                    ToastShower.showToast(activityContext, "Bluetooth is off");
                     break;
                 case BluetoothAdapter.STATE_TURNING_OFF:
-                    BluetoothUtils.toast(activityContext, "Bluetooth is turning off...");
+                    ToastShower.showToast(activityContext, "Bluetooth is turning off...");
                     break;
                 case BluetoothAdapter.STATE_ON:
-                    BluetoothUtils.toast(activityContext, "Bluetooth is on");
+                    ToastShower.showToast(activityContext, "Bluetooth is on");
                     break;
                 case BluetoothAdapter.STATE_TURNING_ON:
-                    BluetoothUtils.toast(activityContext, "Bluetooth is turning on...");
+                    ToastShower.showToast(activityContext, "Bluetooth is turning on...");
                     break;
             }
         }

@@ -20,7 +20,7 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 
 import com.group08.ecse426finalproject.R;
-import com.group08.ecse426finalproject.utils.BluetoothUtils;
+import com.group08.ecse426finalproject.utils.ToastShower;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -120,7 +120,7 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
         if
                 (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE
         )) {
-            BluetoothUtils.toast(this, "Bluetooth not supported with this device. GG");
+            ToastShower.showToast(this, "Bluetooth not supported with this device. GG");
             finish();
         }
     }
@@ -131,7 +131,7 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         // Used in future BLE tutorials
-        BluetoothUtils.toast(getApplicationContext(), "you clicked on" + mBTLEDeviceArrayList.get(position).getName());
+        ToastShower.showToast(getApplicationContext(), "you clicked on" + mBTLEDeviceArrayList.get(position).getName());
 
         stopScan();
 
@@ -158,7 +158,7 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
         switch (v.getId()) {
 
             case R.id.scanButton:
-                BluetoothUtils.toast(getApplicationContext(), "Scan Button Pressed");
+                ToastShower.showToast(getApplicationContext(), "Scan Button Pressed");
 
                 if(!mBTLeScanner.isScanning()) {
                     startScan();
@@ -248,13 +248,13 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
 //        mBluetoothAdapter = mBTLeScanner.getBluetoothAdapter(); //obtain adapter from BTLeScanner
 //
 //        if(!mBluetoothAdapter.isEnabled()){
-//            BluetoothUtils.toast(getApplicationContext(), "Bluetooth is disabled...");
+//            BluetoothUtils.showToast(getApplicationContext(), "Bluetooth is disabled...");
 //            finish();
 //        }
 //        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 //        mGatt = device.connectGatt(getApplicationContext(), false, mCallback);
 //        Log.d("BLE", "connectDevice");
-//        BluetoothUtils.toast(getApplicationContext(), "Selected device is " + mGatt.getDevice().getAddress());
+//        BluetoothUtils.showToast(getApplicationContext(), "Selected device is " + mGatt.getDevice().getAddress());
 //    }
 //    private BluetoothGattCallback mCallback = new BluetoothGattCallback() {
 //        @Override
@@ -321,10 +321,10 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
         if (requestCode == REQUEST_ENABLE_BT) {
             // Make sure the request was successful
             if (resultCode == RESULT_OK) {
-                BluetoothUtils.toast(getApplicationContext(), "Thank you for turning on Bluetooth");
+                ToastShower.showToast(getApplicationContext(), "Thank you for turning on Bluetooth");
             }
             else if (resultCode == RESULT_CANCELED) {
-                BluetoothUtils.toast(getApplicationContext(), "Please turn on bluetooth.");
+                ToastShower.showToast(getApplicationContext(), "Please turn on bluetooth.");
             }
         }
         else if (requestCode == BTLE_SERVICES){

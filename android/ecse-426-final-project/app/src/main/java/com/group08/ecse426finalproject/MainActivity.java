@@ -8,11 +8,8 @@ import android.view.View;
 import android.widget.Button;
 
 import com.group08.ecse426finalproject.accelerometer.AccelerometerActivity;
-import com.group08.ecse426finalproject.bluetooth.Activity_BTLE_Services;
 import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
 import com.group08.ecse426finalproject.speech.SpeechActivity;
-import com.group08.ecse426finalproject.utils.BluetoothUtils;
-import com.group08.ecse426finalproject.utils.ByteUtils;
 
 import java.util.Arrays;
 

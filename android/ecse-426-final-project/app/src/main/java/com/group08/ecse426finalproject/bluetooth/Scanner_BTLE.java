@@ -10,8 +10,7 @@ import android.content.Context;
 import android.os.Handler;
 
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
-
-import java.util.UUID;
+import com.group08.ecse426finalproject.utils.ToastShower;
 
 @TargetApi(21)
 
@@ -67,12 +66,12 @@ public class Scanner_BTLE {
     private void scanLeDevice(final boolean enable){
 
         if(enable && !mScanning) {
-            BluetoothUtils.toast(mBluetoothActivity.getApplicationContext(), "Started BLE scanning...");
+            ToastShower.showToast(mBluetoothActivity.getApplicationContext(), "Started BLE scanning...");
 
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    BluetoothUtils.toast(mBluetoothActivity.getApplicationContext(), "Stopping BLE Scanning...");
+                    ToastShower.showToast(mBluetoothActivity.getApplicationContext(), "Stopping BLE Scanning...");
 
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);

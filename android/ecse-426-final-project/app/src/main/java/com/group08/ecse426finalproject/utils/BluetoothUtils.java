@@ -3,17 +3,13 @@ package com.group08.ecse426finalproject.utils;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.view.Gravity;
-import android.widget.Toast;
 
 import com.group08.ecse426finalproject.bluetooth.BluetoothActivity;
 import com.group08.ecse426finalproject.bluetooth.Service_BTLE_GATT;
 
 public class BluetoothUtils {
-
     public static boolean checkBluetooth(BluetoothAdapter bluetoothAdapter) {
         // Ensures Bluetooth is available on the device and it is enabled. If not,
         // displays a dialog requesting user permission to enable Bluetooth.
@@ -23,13 +19,6 @@ public class BluetoothUtils {
         else {
             return true;
         }
-    }
-
-    public static void toast(Context context, String string) {
-
-        Toast toast = Toast.makeText(context, string, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER | Gravity.BOTTOM, 0, 0);
-        toast.show();
     }
 
     // request to turn on bt by prompting user to change in settings
@@ -48,21 +37,6 @@ public class BluetoothUtils {
         intentFilter.addAction(Service_BTLE_GATT.ACTION_DATA_AVAILABLE);
 
         return intentFilter;
-    }
-
-    /**
-     *  Used to transfer byte[] to String if want to display the values in the app.
-      * @param data in byte,
-     * @return String value of the byte
-     */
-    public static String hexToString(byte[] data) {
-        final StringBuilder sb = new StringBuilder(data.length);
-
-        for(byte byteChar : data) {
-            sb.append(String.format("%02X ", byteChar));
-        }
-
-        return sb.toString();
     }
 
     public static int hasWriteProperty(int property) {

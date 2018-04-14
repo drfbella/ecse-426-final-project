@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
+import com.group08.ecse426finalproject.utils.ByteManipulator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -126,7 +127,7 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
 
         byte[] data = bluetoothGattCharacteristic.getValue();
         if (data != null) {
-            tv_value.setText("Value: " + BluetoothUtils.hexToString(data));
+            tv_value.setText("Value: " + ByteManipulator.hexToString(data));
         }
         else {
             tv_value.setText("Value: ---");

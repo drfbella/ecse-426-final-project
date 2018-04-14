@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.github.mikephil.charting.charts.ScatterChart;
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.firebase.FirebaseService;
-import com.group08.ecse426finalproject.utils.ByteUtils;
+import com.group08.ecse426finalproject.utils.ByteManipulator;
 import com.group08.ecse426finalproject.utils.ChartCreator;
 
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
@@ -18,7 +18,7 @@ import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 public class SpeechActivity extends AppCompatActivity {
     private static final String TAG = "SpeechActivity";
     private FirebaseService firebaseService;
-    private ByteUtils byteUtils;
+    private ByteManipulator byteManipulator;
     private ChartCreator chartCreator;
     private SpeechService speechService;
 
@@ -33,7 +33,7 @@ public class SpeechActivity extends AppCompatActivity {
         setContentView(R.layout.activity_speech);
 
         firebaseService = new FirebaseService();
-        byteUtils = new ByteUtils();
+        byteManipulator = new ByteManipulator();
         chartCreator = new ChartCreator();
         speechService = new SpeechService(this);
 

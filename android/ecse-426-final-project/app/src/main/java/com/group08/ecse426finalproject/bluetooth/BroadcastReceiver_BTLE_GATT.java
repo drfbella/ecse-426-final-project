@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.group08.ecse426finalproject.utils.BluetoothUtils;
-import com.group08.ecse426finalproject.utils.ByteUtils;
+import com.group08.ecse426finalproject.utils.ByteManipulator;
+import com.group08.ecse426finalproject.utils.ToastShower;
 
 import java.util.Arrays;
 import java.util.UUID;
@@ -17,11 +17,11 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
     private boolean mConnected = false;
 
     private Activity_BTLE_Services activity;
-    private ByteUtils byteUtils;
+    private ByteManipulator byteManipulator;
 
     public BroadcastReceiver_BTLE_GATT(Activity_BTLE_Services activity) {
         this.activity = activity;
-        byteUtils = new ByteUtils();
+        byteManipulator = new ByteManipulator();
     }
 
     // Handles various events fired by the Service.
@@ -40,7 +40,7 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         }
         else if (Service_BTLE_GATT.ACTION_GATT_DISCONNECTED.equals(action)) {
             mConnected = false;
-            BluetoothUtils.toast(activity.getApplicationContext(), "Disconnected From Device");
+            ToastShower.showToast(activity.getApplicationContext(), "Disconnected From Device");
             activity.finish();
         }
         else if (Service_BTLE_GATT.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
@@ -49,7 +49,7 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
         else if (Service_BTLE_GATT.ACTION_DATA_AVAILABLE.equals(action)) {
             byte[] byteArray = intent.getByteArrayExtra(Service_BTLE_GATT.EXTRA_DATA);
             if (byteArray != null) {
-                int[] unsignedByteArray = byteUtils.toUnsignedArray(byteArray);
+                int[] unsignedByteArray = byteManipulator.toUnsignedArray(byteArray);
                 Log.d("ON RECEIVE DEBUG: " , intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID));
                 if(intent.getStringExtra(Service_BTLE_GATT.EXTRA_UUID).equals(UUID.fromString(Activity_BTLE_Services.AUDIO_CHARACTERISTIC_UUID).toString())){
                     Log.d(TAG, "Received audio data: " + Arrays.toString(unsignedByteArray));
