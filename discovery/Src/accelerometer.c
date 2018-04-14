@@ -5,43 +5,46 @@
 #include "main.h"
 
 #define PI 3.14159265358979323846
+//tap detection
 #define THRESHOLD 25
 #define NUM_CHECKS_FOR_TWO_TAPS	20
-
 uint8_t status;
 float Buffer[3];
 float accX, accY, accZ;
-float accValue[3] = {0,0,0};
-extern int counter;
+int taps = 0;
 float accXWindow[10] = {0.0};
 float accYWindow[10] = {0.0};
 float accZWindow[10] = {0.0};
 int windowSize = 10;
+extern int counter;
 
-int accelIndex = 0;
+
+//for use by the FIR filter
 #define bLength 5 //length of coefficient array for FIR filter
 #define STORED_LENGTH 10 // length of stored output vector used in calculating RMS
-
-	//for use by the FIR filter
-	float fir_coefficients[bLength] = { 0.2, 0.2, 0.2, 0.2, 0.2 };
-	float currentFilterWindow[bLength] = { 0, 0, 0, 0, 0 };
-
-	//buffer for acceleration values
-	float filteredAccX[ACCELERATION_BUFFER_SIZE] = {0.0};
-	float filteredAccY[ACCELERATION_BUFFER_SIZE] = {0.0};
-	float filteredAccZ[ACCELERATION_BUFFER_SIZE] = {0.0};
-	float storedRoll[ACCELERATION_BUFFER_SIZE] = {0};
-	float storedPitch[ACCELERATION_BUFFER_SIZE] = {0};
+float fir_coefficients[bLength] = { 0.2, 0.2, 0.2, 0.2, 0.2 };
+float currentFilterWindow[bLength] = { 0, 0, 0, 0, 0 };
 
 
-	
+//index in roll and pitch arrays to store new values
+int accelIndex = 0;	
+//stored acceleration values
+float storedRoll[ACCELERATION_BUFFER_SIZE] = {0};
+float storedPitch[ACCELERATION_BUFFER_SIZE] = {0};
+
+
+/**
+  * @brief  Initializes the accelerometer to run at 100Hz in interrupt mode
+  * @param  none
+  * @retval none
+*/	
 void accelerometer_init(void) {
 
 	/* initialise accelerometer */
 	LIS3DSH_InitTypeDef Acc_InitDef;
 
 	/* define field of the accelerometer initialisation structure */
-	Acc_InitDef.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_100;      									/* 25Hz */
+	Acc_InitDef.Power_Mode_Output_DataRate = LIS3DSH_DATARATE_100;      									/* 100Hz */
 	Acc_InitDef.Axes_Enable = LIS3DSH_XYZ_ENABLE;                     									/* XYZ */
 	Acc_InitDef.Continous_Update = LIS3DSH_ContinousUpdate_Disabled;										/* continuous update */
 	Acc_InitDef.AA_Filter_BW = LIS3DSH_AA_BW_50;																				/* 50Hz to filter gravity*/
@@ -49,7 +52,6 @@ void accelerometer_init(void) {
 
 	LIS3DSH_Init(&Acc_InitDef);
 	
-//If we're doing this with an interrupt, also would need to declare this in 32f4xx_it.c
 	
 // initilalize accelerometer interupt
 	LIS3DSH_DRYInterruptConfigTypeDef Acc_Interrupt_InitDef;
@@ -61,6 +63,7 @@ void accelerometer_init(void) {
 
 	LIS3DSH_DataReadyInterruptConfig(&Acc_Interrupt_InitDef);
 
+	//enable interrupt
 	HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 	HAL_NVIC_SetPriority(EXTI0_IRQn, 0, 1);
 
@@ -87,46 +90,68 @@ void accelerometer_init(void) {
 	}
 }
 
+/**
+  * @brief  resets the roll and pitch storage
+  * @param  none
+  * @retval none
+*/	
 void resetAccelIndex(void){
 	accelIndex = 0;
 }
 
+/**
+  * @brief  reads the accelerometer and updates the the roll and pitch storage
+  * @param  none
+  * @retval -1 if the roll and pitch storage is full
+*/
 int storeAccelValues(void){
 	if(accelIndex >= ACCELERATION_BUFFER_SIZE ){
 	//	printf("ACCELERATION BUFFER FULL OH NOS\n");
 		return -1;
 	}
+		float filteredX, filteredY, filteredZ;
 
 		LIS3DSH_ReadACC(&Buffer[0]);
-		FIR_C((float)Buffer[0], &filteredAccX[accelIndex]);
-		FIR_C((float)Buffer[1], &filteredAccY[accelIndex]);
-		FIR_C((float)Buffer[2], &filteredAccZ[accelIndex]);
+		FIR_C((float)Buffer[0], &filteredX);
+		FIR_C((float)Buffer[1], &filteredY);
+		FIR_C((float)Buffer[2], &filteredZ);
 
-		storedPitch[accelIndex] = calcPitch(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
-		storedRoll[accelIndex] = calcRoll(filteredAccX[accelIndex],filteredAccY[accelIndex],filteredAccZ[accelIndex]);
+		storedPitch[accelIndex] = calcPitch(filteredX,filteredY,filteredZ);
+		storedRoll[accelIndex] = calcRoll(filteredX,filteredY,filteredZ);
 		accelIndex++;
 
 	return 0;
 }
 
-
+/**
+  * @brief  calculates pitch
+  * @param  acceleration in the x direction
+  * @param  acceleration in the y direction
+  * @param  acceleration in the z direction
+	* @retval pitch
+*/
 float calcPitch(float x, float y, float z){
 float pitch = atan2(y,(sqrt(x*x + z*z)))* 180 / PI;
 	return pitch;
 }
 
+/**
+  * @brief  calculates roll
+  * @param  acceleration in the x direction
+  * @param  acceleration in the y direction
+  * @param  acceleration in the z direction
+	* @retval roll
+*/
 float calcRoll(float x, float y, float z){
 float roll = atan2(-x,z) * 180 / PI;
 	return roll;
 }
-
-void readAccelerometer(){
- 
-		//TODO can probably do this with a delay in the main loop instead
-		//commenting out here, because for second tap detection, 200 ms between readings might not be enough - need to refresh the whole window 
-//		if (MyFlag/10) //which means it's true every 0.2s
-//		{
-//			MyFlag = 0;
+/**
+  * @brief  reads the accelerometer
+  * @param  none
+	* @retval none
+*/
+void readAccelerometer(void){
 			//Reading the accelerometer status register
 				LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
 				//The first four bits denote if we have new data on all XYZ axes, 
@@ -137,8 +162,6 @@ void readAccelerometer(){
 					accX = (float)Buffer[0];
 					accY = (float)Buffer[1];
 					accZ = (float)Buffer[2];
-//					calcPitch (accX, accY, accZ);
-//					calcRoll (accX, accY, accZ);
 	//				printf("X: %4f     Y: %4f     Z: %4f	 \n", accX, accY, accZ);
 				
 					//This block is implementing a sliding window and storing fetched values
@@ -153,9 +176,13 @@ void readAccelerometer(){
 						accYWindow[windowSize-1] = accY;
 						accZWindow[windowSize-1] = accZ;
 				}
-//			}
 	}
 
+/**
+  * @brief  checks the accWindow for signs of a tap
+  * @param  none
+	* @retval 1 if a tap has been detected, 0 otherwise
+*/
 int detectTap(void){
 	
   int tap = 0;
@@ -183,9 +210,11 @@ int detectTap(void){
 	
 }
 
-int taps = 0;
-extern int counter;
-
+/**
+  * @brief  checks the accWindow for signs of a tap. If one tap is detected, resets a tap counter and continues to check until it expires to determine if there has been a double tap
+  * @param  none
+	* @retval 1 if a tap has been detected but the counter has reached it's limit, 2 if two taps have been detected, 0 otherwise
+*/
 int howManyTaps(void){
 	
 	if (detectTap()){

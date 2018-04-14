@@ -2,13 +2,13 @@
 #include <math.h>
 #include <string.h>
 
-#define TIMEOUT 10000 //TODO what is a good timeout?
+#define TIMEOUT 10000 
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
 #define TX_BUFFER_SIZE 32001 //size of buffer used for transmitting
 #define RX_BUFFER_SIZE 1 //size of buffer used for recieving
 
-//pin tx A2, rx   on stm32f407
+//pin tx C12, rx  D2 on stm32f407
 
 UART_HandleTypeDef uart_handle;
 
@@ -17,9 +17,13 @@ uint8_t txBuffer[TX_BUFFER_SIZE];
 //buffer for incoming data
 uint8_t rxBuffer[RX_BUFFER_SIZE];
 
+/**
+  * @brief  Initializes UART5 
+  * @param  none
+  * @retval none
+*/	
 void UART_Initialize(void)
 {
-	
   uart_handle.Instance = UART5;
   uart_handle.Init.BaudRate = 115200;
   uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
@@ -34,9 +38,9 @@ void UART_Initialize(void)
   }
 }
 
-
-HAL_StatusTypeDef retTxTest = HAL_OK; 
+//TODO remove
 void transmitTest(){
+	HAL_StatusTypeDef retTxTest = HAL_OK; 
 	txBuffer[0] = 'F';
 	txBuffer[1] = 'U';
 	txBuffer[2] = 'C';
@@ -51,8 +55,8 @@ void transmitTest(){
   }
 }
 
-HAL_StatusTypeDef retRxTest = HAL_OK; 
 void receiveTest(){
+	HAL_StatusTypeDef retRxTest = HAL_OK; 
 	retRxTest = HAL_UART_Receive(&uart_handle, rxBuffer, RX_BUFFER_SIZE, TIMEOUT);
 	if(HAL_OK != retRxTest){
 		printf("RX TEST FAILED \n");
@@ -80,18 +84,6 @@ void encodeFloatDegree(float toEncode, uint8_t encoded[]){
 	memcpy(encoded, &temp, 2);
 }
 
-
-
-//TODO this is just taking one value. In fact, we need an array of roll pitch values 
-void transmitRollAndPitch(float roll, float pitch){
-//	memset(txBuffer, 0, TX_BUFFER_SIZE); //clear transmitting buffer of junk, maybe unnecessary
-	txBuffer[0] = TRANSMISSION_TYPE_ROLLPITCH; //identify type of data being transmitted
-	encodeFloatDegree(roll, (txBuffer+1));//convert roll and pitch to byte[] and add to transmission mesage
-	encodeFloatDegree(pitch, (txBuffer+3));
-	if(HAL_OK != HAL_UART_Transmit(&uart_handle, txBuffer, 5, TIMEOUT)){
-		printf("transmit single roll pitch failed");
-	}
-}
 
 /**
   * @brief  maps an array of angle in degrees stored as a float to an array of bytes (2 bytes per value)
@@ -128,9 +120,6 @@ void transmitFreakinHugeRollAndPitchArrays(float roll[], float pitch[], int size
 
 }
 
-//TODO I want to test to make sure this is fine, so for the watch
-uint16_t twoBytesEnough = 0;
-// The ADC is 12 bit resolution, but ADC get value returns a uint32... 2 bytes should be enough
 
 /**
   * @brief  transmits an array of ints (which in this case represent raw ADC readings from the mic) 
@@ -139,6 +128,7 @@ uint16_t twoBytesEnough = 0;
   * @retval None
   */
 void transmitFreakinHugeAudioArray(uint32_t audio[], int size){
+	uint16_t twoBytesEnough = 0;
 	if(size > TX_BUFFER_SIZE){
 		printf("TOO MANY DATA POINTS FOR THIS TRANSFER (audio)\n");
 		size = TX_BUFFER_SIZE;
@@ -169,24 +159,3 @@ int receiveResponseInt(void){
 		return rxBuffer[0];
 	}
 }
-
-
-
-//Do we need/want interrupts? try with polling first
-
-//interupt callbacks
-//if using them need HAL_UART_Receive_IT(&uart_handle, (uint8_t *)rxBuffer, RX_BUFFER_SIZE)
-//and wait for done maybe.
-//same for transmit
-
-/*
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-}
-
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *UartHandle)
-{
-}
-*/
-
-

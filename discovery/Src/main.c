@@ -78,7 +78,7 @@ int audioBufferIndex = 0; // current index of audio buffer
 uint32_t audioBuffer[AUDIO_BUFFER_SIZE] = {0}; //buffer to store 1 sec of audio data 
 
 extern float storedRoll[]; //acceleration values to transfer
-extern float storedPitch[];
+extern float storedPitch[]; //comes from accerometer.c
 
 /*The handler for the ADC automatically calls callback. Should send the value to the filter, calculate min/max, rms*/
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
@@ -94,6 +94,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
 	}
 }
 
+//callback for accelerometer
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 	switch(State){
 		case STATE_READ_ACCEL:
@@ -105,7 +106,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
 			break;
 		case STATE_DETECT_TAP:
 			readAccelerometer();
-			counter++; //This counter is gonna count to about 200 until I care about the value of the accelerometer, to allow it to stabilize
+			counter++; //This counter is gonna count to a set limit until I care about the value of the accelerometer, to allow it to stabilize
 			if(counter > 10){	
 				tapCount = howManyTaps();
 
