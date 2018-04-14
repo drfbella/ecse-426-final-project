@@ -49,7 +49,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     public static final String AUDIO_CHARACTERISTIC_UUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
     public static final String PITCH_CHARACTERISTIC_UUID = "e73e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
     public static final String ROLL_CHARACTERISTIC_UUID  = "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
-    public static final String WRITE_CHARACTERISTIC_UUID = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx";
+    public static final String WRITE_CHARACTERISTIC_UUID = "e53e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
 
     private List<byte[]> pitchData = new ArrayList<>();
     private List<byte[]> rollData = new ArrayList<>();
