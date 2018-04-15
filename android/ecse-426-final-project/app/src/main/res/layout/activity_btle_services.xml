@@ -65,11 +65,20 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
             <Button
+                android:id="@+id/button_speech_firebase"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="@string/firebase"
+                app:layout_constraintStart_toEndOf="@+id/button_speech" />
+
+            <Button
                 android:id="@+id/button_pitch_roll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/pitch_roll"
                 app:layout_constraintEnd_toEndOf="parent" />
+
         </android.support.constraint.ConstraintLayout>
 
         <android.support.constraint.ConstraintLayout

@@ -23,4 +23,5 @@
     <string name="pitch_roll">Pitch/Roll</string>
     <string name="speech_button">Speech</string>
     <string name="transcription_error">[Unable to transcribe number.]</string>
+    <string name="firebase">Firebase</string>
 </resources>
