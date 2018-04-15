@@ -206,11 +206,14 @@ tBleStatus Add_Final_Service(void)
   ret =  aci_gatt_add_char(finalServHandle, UUID_TYPE_128, uuid, 1,
                            CHAR_PROP_NOTIFY|CHAR_PROP_READ|CHAR_PROP_WRITE,
                            ATTR_PERMISSION_NONE,
-                           GATT_NOTIFY_READ_REQ_AND_WAIT_FOR_APPL_RESP,
+                           GATT_NOTIFY_ATTRIBUTE_WRITE,
                            16, 0, &returnHandle);
   if (ret != BLE_STATUS_SUCCESS) goto fail;
 
-  
+ // uint8_t desc  = 1;
+//	aci_gatt_write_charac_descriptor(connection_handle,returnHandle,1,&desc);
+	
+	
   PRINTF("Service FINAL added. Handle 0x%04X, Roll Charac handle: 0x%04X, AUDIO Charac handle: 0x%04X\n",finalServHandle, rollHandle, audioHandle);	
   return BLE_STATUS_SUCCESS; 
   
@@ -311,10 +314,6 @@ txCount = 0; //for debugging
 //but check this works first
 tBleStatus listenForResponse(void){
 	tBleStatus ret = 0;
-	ret = aci_gatt_read_charac_val(connection_handle, returnHandle);
-	if(ret != BLE_STATUS_SUCCESS){
-		printf("failure is always an option\n");
-	}
 	return ret;
 }
 
@@ -741,11 +740,23 @@ void HCI_Event_CB(void *pckt)
       evt_blue_aci *blue_evt = (void*)event_pckt->data;
       switch(blue_evt->ecode){
 
-#if NEW_SERVICES
+//#if NEW_SERVICES
       case EVT_BLUE_GATT_ATTRIBUTE_MODIFIED:         
         {
+            evt_gatt_attr_modified_IDB04A1 *evt = (evt_gatt_attr_modified_IDB04A1*)blue_evt->data;
+						if(evt->attr_handle == (returnHandle + 1))
+						{
+								uint8_t value = evt->att_data[0];
+//								printf("mod\n");
+								transmit(value);
+							
+
+						}
+       //     Attribute_Modified_CB(evt->attr_handle, evt->data_length, evt->att_data); 
+		
           /* this callback is invoked when a GATT attribute is modified
           extract callback data and pass to suitable handler function */
+/*					printf("add mod\n");
           if (bnrg_expansion_board == IDB05A1) {
             evt_gatt_attr_modified_IDB05A1 *evt = (evt_gatt_attr_modified_IDB05A1*)blue_evt->data;
             Attribute_Modified_CB(evt->attr_handle, evt->data_length, evt->att_data); 
@@ -753,23 +764,15 @@ void HCI_Event_CB(void *pckt)
           else {
             evt_gatt_attr_modified_IDB04A1 *evt = (evt_gatt_attr_modified_IDB04A1*)blue_evt->data;
             Attribute_Modified_CB(evt->attr_handle, evt->data_length, evt->att_data); 
-          }                       
+          }
+*/					
         }
         break; 
-#endif
+//#endif
 
-			//in the case that an item has been read, 
-			case EVT_BLUE_ATT_READ_RESP:{
-					//should be characteristic return
-					//TODO put some check for which characteristic
-					evt_att_read_resp *pr = (void*)blue_evt->data;
-					uint8_t*response;
-					response = pr-> attribute_value;
-					transmit(response[0]);							
-				break;
-			}
       case EVT_BLUE_GATT_READ_PERMIT_REQ:
         {
+					printf("read permit");
           evt_gatt_read_permit_req *pr = (void*)blue_evt->data;                    
           Read_Request_CB(pr->attr_handle);                    
         }

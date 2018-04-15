@@ -275,7 +275,7 @@ int main(void)
 	
   while(1)
   {
-    transmissionType = recieveMessage(); //listen for uart transmission
+		transmissionType = recieveMessage(); //listen for uart transmission
 		if(transmissionType){
 			uint8_t ret = processUART(transmissionType); 
 		}
@@ -306,8 +306,7 @@ uint8_t processUART(uint8_t type){
 			case TRANSMISSION_TYPE_AUDIO:
 				AUDIO_Update();
 				TRANSFER_FLAG_Notify(1); //flag that the transmission has ended 
-				HAL_Delay(1000);//give time to wait for response
-				listenForResponse();//todo let it notify
+//				listenForResponse();//todo let it notify
 				return 0;
 		case TRANSMISSION_TYPE_ROLLPITCH:
 				RP_Update();
