@@ -133,7 +133,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         speechService = new SpeechService(this);
         firebaseService = new FirebaseService();
 
-        textSpeechTranscript = findViewById(R.id.text_transcript);
+        textSpeechTranscript = findViewById(R.id.text_transcript_ble);
         textSpeechFirebaseLink = findViewById(R.id.text_firebase_link);
 
         textSpeechTranscript.setVisibility(View.GONE);
@@ -245,7 +245,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             String uuid = characteristic.getUuid().toString();
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
-                characteristic.setValue(1, FORMAT_UINT8, 0); // Testing purposes
+                characteristic.setValue(5, FORMAT_UINT8, 0); // Testing purposes
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
                 updateCharacteristic();
                 Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
@@ -284,16 +284,25 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         intent.putExtra(SPEECH_DATA_NAME, byteSpeechData);
         setResult(BluetoothActivity.BTLE_SERVICES, intent);
 
+        mBTLE_Service.disconnect();
+
         finish();
         super.onBackPressed();
     }
 
     public void updateSpeechData(byte[] byteArray) {
         this.speechData.add(byteArray);
+        if (speechData.size() == 1600) { // 1600 packets of 20 bytes = 32 000 bytes
+            processSpeechData();
+            speechData.clear();
+        }
     }
 
     public void updatePitchData(byte[] byteArray) {
         this.pitchData.add(byteArray);
+        if (pitchData.size() == 100) {// 100 packets
+            processPitchRollData();
+        }
     }
 
     public void updateRollData(byte[] byteArray) {
@@ -378,7 +387,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                         @Override
                         public void handleSpeechResponse(int transcribedNumber) {
                             textSpeechTranscript.setVisibility(View.VISIBLE);
-                            textSpeechTranscript.setText(transcribedNumber);
+                            textSpeechTranscript.setText(String.valueOf(transcribedNumber));
                             ToastShower.showToast(Activity_BTLE_Services.this, "Transcribed audio as " + transcribedNumber);
                             BluetoothGatt mGatt = mBTLE_Service.getGatt();
                             BluetoothGattService mService = mGatt.getService(UUID.fromString(SERVICE_UUID));
@@ -413,7 +422,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                         @Override
                         public void handleSpeechErrorResponse() {
                             textSpeechTranscript.setVisibility(View.VISIBLE);
-                            textSpeechTranscript.setText("[Unable to transcribe]");
+                            textSpeechTranscript.setText("[Transcription failed]");
                             ToastShower.showToast(Activity_BTLE_Services.this, "Unable to transcribe audio as number.");
                         }
                     });

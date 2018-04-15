@@ -94,7 +94,7 @@
         </android.support.constraint.ConstraintLayout>
 
         <TextView
-            android:id="@+id/text_transcript"
+            android:id="@+id/text_transcript_ble"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/transcript" />
