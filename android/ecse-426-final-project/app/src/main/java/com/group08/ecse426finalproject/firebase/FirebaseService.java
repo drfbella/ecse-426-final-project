@@ -4,6 +4,7 @@ package com.group08.ecse426finalproject.firebase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -52,6 +53,7 @@ public class FirebaseService {
                         Uri downloadUrl = taskSnapshot.getDownloadUrl();
                         Log.d(TAG, "Uploaded URL: " + downloadUrl);
                         if (downloadUrl != null) {
+                            linkTextView.setVisibility(View.VISIBLE);
                             linkTextView.setText(downloadUrl.toString());
                         }
                     }

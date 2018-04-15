@@ -19,10 +19,13 @@ import android.widget.TextView;
 
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.accelerometer.AccelerometerActivity;
+import com.group08.ecse426finalproject.firebase.FirebaseService;
 import com.group08.ecse426finalproject.speech.SpeechResponseHandler;
 import com.group08.ecse426finalproject.speech.SpeechService;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 import com.group08.ecse426finalproject.utils.ToastShower;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +52,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     public static final String AUDIO_CHARACTERISTIC_UUID = "e43e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
     public static final String PITCH_CHARACTERISTIC_UUID = "e73e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
     public static final String ROLL_CHARACTERISTIC_UUID  = "e63e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
-    public static final String WRITE_CHARACTERISTIC_UUID = "e53e78a0-cf4a-11e1-8ffc-2002a5d5c51c";
+    public static final String WRITE_CHARACTERISTIC_UUID = "e53f78a0-cf4a-11e1-8ffc-2002a5d5c51c";
 
     private List<byte[]> pitchData = new ArrayList<>();
     private List<byte[]> rollData = new ArrayList<>();
@@ -70,6 +73,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     private boolean mBTLE_Service_Bound;
     private BroadcastReceiver_BTLE_GATT mGattUpdateReceiver;
     private SpeechService speechService;
+    private FirebaseService firebaseService;
 
     private String name;
     private String address;
@@ -79,6 +83,9 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     private Button buttonPitchRoll;
     private Button buttonClearSpeech;
     private Button buttonClearPitchRoll;
+
+    private TextView textSpeechTranscript;
+    private TextView textSpeechFirebaseLink;
 
     // service connection
     private ServiceConnection mBTLE_ServiceConnection = new ServiceConnection() {
@@ -124,6 +131,13 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         characteristics_HashMapList = new HashMap<>();
 
         speechService = new SpeechService(this);
+        firebaseService = new FirebaseService();
+
+        textSpeechTranscript = findViewById(R.id.text_transcript);
+        textSpeechFirebaseLink = findViewById(R.id.text_firebase_link);
+
+        textSpeechTranscript.setVisibility(View.GONE);
+        textSpeechFirebaseLink.setVisibility(View.GONE);
 
         buttonStoreValues = findViewById(R.id.btn_storeValues);
         buttonStoreValues.setVisibility(View.INVISIBLE);
@@ -155,6 +169,8 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             @Override
             public void onClick(View view) {
                 speechData.clear();
+                textSpeechTranscript.setVisibility(View.GONE);
+                textSpeechFirebaseLink.setVisibility(View.GONE);
                 ToastShower.showToast(Activity_BTLE_Services.this, "Speech data cleared.");
             }
         });
@@ -229,7 +245,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             String uuid = characteristic.getUuid().toString();
             Log.d(TAG, "Clicked on a characteristic " + uuid);
             if (mBTLE_Service != null) {
-                characteristic.setValue(0b1, FORMAT_UINT8, 0); // Testing purposes
+                characteristic.setValue(1, FORMAT_UINT8, 0); // Testing purposes
                 mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
                 updateCharacteristic();
                 Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
@@ -354,46 +370,54 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
     }
 
     private void processSpeechData() {
-        byte[] byteSpeechData = concatenateByteArrays(speechData);
-        speechService.sendGoogleSpeechTranscriptionRequest(byteSpeechData,
-                new SpeechResponseHandler() {
-                    @Override
-                    public void handleSpeechResponse(int transcribedNumber) {
-                        ToastShower.showToast(Activity_BTLE_Services.this, "Transcribed audio as " + transcribedNumber);
-                        BluetoothGatt mGatt = mBTLE_Service.getGatt();
-                        BluetoothGattService mService = mGatt.getService(UUID.fromString(SERVICE_UUID));
-                        if(mService == null) {
-                            Log.d(TAG, "couldn't find service");
-                            return;
-                        }
-                        BluetoothGattCharacteristic characteristic = mService.getCharacteristic(UUID.fromString(WRITE_CHARACTERISTIC_UUID));
-                        if(characteristic == null) {
-                            Log.d(TAG, "Unable to read given characteristic.");
-                            return;
-                        }
+        if (!speechData.isEmpty()) {
+            byte[] byteSpeechData = concatenateByteArrays(speechData);
+            firebaseService.uploadBytesUnique(byteSpeechData, "audio/", "raw", textSpeechFirebaseLink);
+            speechService.sendGoogleSpeechTranscriptionRequest(byteSpeechData,
+                    new SpeechResponseHandler() {
+                        @Override
+                        public void handleSpeechResponse(int transcribedNumber) {
+                            textSpeechTranscript.setVisibility(View.VISIBLE);
+                            textSpeechTranscript.setText(transcribedNumber);
+                            ToastShower.showToast(Activity_BTLE_Services.this, "Transcribed audio as " + transcribedNumber);
+                            BluetoothGatt mGatt = mBTLE_Service.getGatt();
+                            BluetoothGattService mService = mGatt.getService(UUID.fromString(SERVICE_UUID));
+                            if(mService == null) {
+                                Log.d(TAG, "couldn't find service");
+                                return;
+                            }
+                            BluetoothGattCharacteristic characteristic = mService.getCharacteristic(UUID.fromString(WRITE_CHARACTERISTIC_UUID));
+                            if(characteristic == null) {
+                                Log.d(TAG, "Unable to read given characteristic.");
+                                return;
+                            }
 
-                        // write-able property
-                        if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
-                            String uuid = characteristic.getUuid().toString();
-                            Log.d(TAG, "Clicked on a characteristic " + uuid);
-                            if (mBTLE_Service != null) {
-                                characteristic.setValue(transcribedNumber, FORMAT_UINT8, 0);
-                                mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
-                                updateCharacteristic();
-                                Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
+                            // write-able property
+                            if (BluetoothUtils.hasWriteProperty(characteristic.getProperties()) != 0) {
+                                String uuid = characteristic.getUuid().toString();
+                                Log.d(TAG, "Clicked on a characteristic " + uuid);
+                                if (mBTLE_Service != null) {
+
+                                    characteristic.setValue(transcribedNumber, FORMAT_UINT8, 0);
+                                    mBTLE_Service.writeCharacteristic(characteristic); // write something to the characteristic
+                                    updateCharacteristic();
+                                    Log.d(TAG, "Wrote to " + characteristic.getUuid().toString());
+                                }
+                            }
+                            else {
+                                Log.d(TAG, characteristic.getUuid() + " Doesn't have write property");
+
                             }
                         }
-                        else {
-                            Log.d(TAG, characteristic.getUuid() + " Doesn't have write property");
 
+                        @Override
+                        public void handleSpeechErrorResponse() {
+                            textSpeechTranscript.setVisibility(View.VISIBLE);
+                            textSpeechTranscript.setText("[Unable to transcribe]");
+                            ToastShower.showToast(Activity_BTLE_Services.this, "Unable to transcribe audio as number.");
                         }
-                    }
-
-                    @Override
-                    public void handleSpeechErrorResponse() {
-                        ToastShower.showToast(Activity_BTLE_Services.this, "Unable to transcribe audio as number.");
-                    }
-                });
+                    });
+        }
     }
 
     private void processPitchRollData() {

@@ -99,7 +99,7 @@ public class Service_BTLE_GATT extends Service {
             }
 
             setNotificationForCharacteristic(gatt, Activity_BTLE_Services.SERVICE_UUID,
-                    Activity_BTLE_Services.AUDIO_CHARACTERISTIC_UUID, true);
+                    Activity_BTLE_Services.AUDIO_CHARACTERISTIC_UUID);
         }
 
         /**
@@ -125,11 +125,11 @@ public class Service_BTLE_GATT extends Service {
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             if(notifyCounter == 0) {
                 setNotificationForCharacteristic(gatt, Activity_BTLE_Services.SERVICE_UUID,
-                        Activity_BTLE_Services.PITCH_CHARACTERISTIC_UUID, true);
-                notifyCounter ++;
+                        Activity_BTLE_Services.PITCH_CHARACTERISTIC_UUID);
+                notifyCounter++;
             } else if (notifyCounter == 1) {
                 setNotificationForCharacteristic(gatt, Activity_BTLE_Services.SERVICE_UUID,
-                        Activity_BTLE_Services.ROLL_CHARACTERISTIC_UUID, true);
+                        Activity_BTLE_Services.ROLL_CHARACTERISTIC_UUID);
                 notifyCounter++;
             }
         }
@@ -410,7 +410,7 @@ public class Service_BTLE_GATT extends Service {
     }
 
 
-    private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID, boolean set) {
+    private void setNotificationForCharacteristic(BluetoothGatt gatt, String serviceUUID, String characteristicUUID) {
         BluetoothGattService mService = gatt.getService(UUID.fromString(serviceUUID));
         if(mService == null) {
             Log.d(TAG, "couldn't find service: " + serviceUUID);
@@ -423,7 +423,7 @@ public class Service_BTLE_GATT extends Service {
         }
 
         if (BluetoothUtils.hasNotifyProperty(mCharacteristic.getProperties()) != 0) {
-            if (gatt.setCharacteristicNotification(mCharacteristic, set)) {
+            if (gatt.setCharacteristicNotification(mCharacteristic, true)) {
                 BluetoothGattDescriptor descriptor = mCharacteristic.getDescriptors().get(0);
                 if (0 != (mCharacteristic.getProperties() & BluetoothGattCharacteristic.PROPERTY_INDICATE)) {
                     // It's an indicate characteristic

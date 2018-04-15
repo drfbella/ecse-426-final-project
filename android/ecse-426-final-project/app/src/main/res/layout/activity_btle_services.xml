@@ -65,14 +65,6 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
             <Button
-                android:id="@+id/button_speech_firebase"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/firebase"
-                app:layout_constraintStart_toEndOf="@+id/button_speech" />
-
-            <Button
                 android:id="@+id/button_pitch_roll"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -100,6 +92,21 @@
                 android:text="Clear Pitch/Roll"
                 app:layout_constraintEnd_toEndOf="parent" />
         </android.support.constraint.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/text_transcript"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/transcript" />
+
+        <TextView
+            android:id="@+id/text_firebase_link"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoLink="web"
+            android:text="@string/firebase_audio_link"
+            android:layout_marginTop="8dp"/>
+
 
     </LinearLayout>
 
