@@ -435,6 +435,8 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         byte[] byteRollData = concatenateByteArrays(rollData);
         i.putExtra(PITCH_DATA_NAME, bytePitchData);
         i.putExtra(ROLL_DATA_NAME, byteRollData);
+        pitchData.clear();
+        rollData.clear();
         startActivity(i);
     }
 }
