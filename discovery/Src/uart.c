@@ -2,7 +2,8 @@
 #include <math.h>
 #include <string.h>
 
-#define TIMEOUT 10000 
+#define TX_TIMEOUT 10000 
+#define RX_TIMEOUT 60000
 #define TRANSMISSION_TYPE_ROLLPITCH 1
 #define TRANSMISSION_TYPE_AUDIO 2
 #define TX_BUFFER_SIZE 32001 //size of buffer used for transmitting
@@ -46,7 +47,7 @@ void transmitTest(){
 	txBuffer[2] = 'C';
 	txBuffer[3] = 'K';
 	
-  retTxTest = HAL_UART_Transmit(&uart_handle, (uint8_t*)txBuffer, 4, TIMEOUT);
+  retTxTest = HAL_UART_Transmit(&uart_handle, (uint8_t*)txBuffer, 4, TX_TIMEOUT);
 	if(HAL_OK != retTxTest){
 		printf("TX TEST FAILED \n");
 		if(HAL_TIMEOUT == retTxTest){
@@ -57,7 +58,7 @@ void transmitTest(){
 
 void receiveTest(){
 	HAL_StatusTypeDef retRxTest = HAL_OK; 
-	retRxTest = HAL_UART_Receive(&uart_handle, rxBuffer, RX_BUFFER_SIZE, TIMEOUT);
+	retRxTest = HAL_UART_Receive(&uart_handle, rxBuffer, RX_BUFFER_SIZE, RX_TIMEOUT);
 	if(HAL_OK != retRxTest){
 		printf("RX TEST FAILED \n");
 		if(HAL_TIMEOUT == retRxTest){
@@ -113,7 +114,7 @@ void transmitFreakinHugeRollAndPitchArrays(float roll[], float pitch[], int size
 	txBuffer[0] = TRANSMISSION_TYPE_ROLLPITCH; //identify type of data being transmitted
 	encodeDegreeArray(roll, (txBuffer+1), size);//convert roll and pitch to byte[] and add to transmission mesage
 	encodeDegreeArray(pitch, (txBuffer+(2*size)+1), size);
-	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT);
+	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TX_TIMEOUT);
 	if(HAL_OK != ret){
 		printf("transmission of ridiculously huge roll and pitch failed. Time to cry now\n");
   }
@@ -139,7 +140,7 @@ void transmitFreakinHugeAudioArray(uint32_t audio[], int size){
 		twoBytesEnough = audio[i];
 		memcpy(&txBuffer[(2*i)+1], &twoBytesEnough, 2);		
 	}
-	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TIMEOUT);
+	HAL_StatusTypeDef ret = HAL_UART_Transmit(&uart_handle, txBuffer, TX_BUFFER_SIZE, TX_TIMEOUT);
 	if(HAL_OK != ret){
 		printf("transmission of ridiculously huge audio array. Time to cry now\n");
   }
@@ -151,7 +152,7 @@ void transmitFreakinHugeAudioArray(uint32_t audio[], int size){
   * @retval integer value received
 */
 int receiveResponseInt(void){
-	if(HAL_OK != HAL_UART_Receive(&uart_handle, rxBuffer, 1, TIMEOUT)){
+	if(HAL_OK != HAL_UART_Receive(&uart_handle, rxBuffer, 1, RX_TIMEOUT)){
 		    printf("There was no answer. There was much sadness \n");
 		return 0;	
 	}

@@ -183,7 +183,7 @@ void readAccelerometer(void){
   * @param  none
 	* @retval 1 if a tap has been detected, 0 otherwise
 */
-int detectTap(void){
+int detectTap2(void){
 	
   int tap = 0;
 	/*Accelerometer data changes most notably in the y axis upon tap
@@ -202,13 +202,45 @@ int detectTap(void){
 			smallY = accYWindow[j];
 		}
 	}
-	if ((fabs(largeY) - fabs(smallY) > 25)){
+	if ((fabs(largeY) - fabs(smallY) > 40)){
 			printf("tap detected \n");
 			tap = 1;	
 	}
 	return tap;
 	
 }
+
+
+int detectTap(void){
+	
+  int tap = 0;
+	/*Accelerometer data changes most notably in the y axis upon tap
+		This could be optimized but say we detext a tap if there's a change of 25mm/s^2 */
+	int up = 0;
+	float diff = 0;
+	float prev = accYWindow[0];
+		
+	for (int j = 1; j < windowSize; j++){
+		diff = 	accYWindow[j] - prev;
+		prev = accYWindow[j];
+		if(up){
+			if(diff < -150){
+				tap = 1;
+				break;
+			}
+		}
+		else{
+			if(diff > 150){
+				up = 1;
+			}
+		}
+	}
+	
+	
+	return tap;
+	
+}
+
 
 /**
   * @brief  checks the accWindow for signs of a tap. If one tap is detected, resets a tap counter and continues to check until it expires to determine if there has been a double tap
