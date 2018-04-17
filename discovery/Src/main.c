@@ -39,67 +39,167 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 #include "lis3dsh.h"
+#include "accelerometer.h"
+#include "uart.h"
 
+#define STATE_DETECT_TAP 0
+#define STATE_RECORD_AUDIO 1
+#define STATE_READ_ACCEL 2
+#define STATE_RECIEVE_RESPONSE 3
+#define AUDIO_BUFFER_SIZE 16000
+/* Private variables ---------------------------------------------------------*/
+
+LIS3DSH_InitTypeDef Acc_instance;
+ADC_HandleTypeDef hadc1;
+TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 /* Private variables ---------------------------------------------------------*/
 
-LIS3DSH_InitTypeDef 		Acc_instance;
-
-/* Private variables ---------------------------------------------------------*/
-	uint8_t status;
-	float Buffer[3];
-	float accX, accY, accZ;
-	uint8_t MyFlag = 0;
 	
 	
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_ADC1_Init(void);
+static void MX_TIM2_Init(void);
 
-void initializeACC			(void);
+const uint16_t led_pins[] = {LD4_Pin,LD5_Pin,LD6_Pin};
+int State = STATE_DETECT_TAP;
+int N = 0; //number returned
+int counter = 0; // to avoid initial garbage readings in accelerometer
+int tapCount = 0; // number of taps detected
+
+int readAccelForTenDone = 0; //flag to signal end of phase 2
+int readAudioForOneDone = 0; // flag to signal end of phase 1
+
+int audioBufferIndex = 0; // current index of audio buffer
+uint32_t audioBuffer[AUDIO_BUFFER_SIZE] = {0}; //buffer to store 1 sec of audio data 
+
+extern float storedRoll[]; //acceleration values to transfer
+extern float storedPitch[]; //comes from accerometer.c
+
+/*The handler for the ADC automatically calls callback. Should send the value to the filter, calculate min/max, rms*/
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc){
+	audioBuffer[audioBufferIndex] = HAL_ADC_GetValue(&hadc1);
+	//printf("audio %i \n", audioBuffer[audioBufferIndex]);
+	audioBufferIndex++;
+	if(audioBufferIndex >= AUDIO_BUFFER_SIZE){
+		HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_RESET); //turn off recording LED		
+		HAL_ADC_Stop_IT(&hadc1); 
+		HAL_TIM_Base_Stop(&htim2);
+		//TODO can also deinit this		
+		readAudioForOneDone = 1;
+	}
+}
+
+//callback for accelerometer
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_PIN){
+	switch(State){
+		case STATE_READ_ACCEL:
+			if(!readAccelForTenDone){
+				if(storeAccelValues() == -1){
+					readAccelForTenDone = 1;
+				}
+			}
+			break;
+		case STATE_DETECT_TAP:
+			readAccelerometer();
+			counter++; //This counter is gonna count to a set limit until I care about the value of the accelerometer, to allow it to stabilize
+			if(counter > 10){	
+				tapCount = howManyTaps();
+
+			}
+		break;
+	}			
+}
+
 
 
 int main(void)
 {
 
+HAL_Init();
+SystemClock_Config();
+MX_GPIO_Init();
+accelerometer_init();	
+MX_ADC1_Init();
+MX_TIM2_Init();
+HAL_TIM_Base_Init(&htim2); //Starts the timer base generation for time 2 -->ADC
+  
 
-  HAL_Init();
-  SystemClock_Config();
-  MX_GPIO_Init();
-	initializeACC	();	// Like any other peripheral, you need to initialize it. Refer to the its driver to learn more.
 
-	// and example of sending a data through UART, but you need to configure the UART block:
-	// HAL_UART_Transmit(&huart2,"FinalProject\n",14,2000); 
-
-
+	UART_Initialize();
   while (1)
-  {
- 
-		if (MyFlag/200)
-		{
+ {	
+		switch (State){	
+		case STATE_DETECT_TAP:
+			//State 0: read acc and detect tap	
+					switch (tapCount){
+						case 2:
+							resetAccelIndex();
+							readAccelForTenDone = 0;
+							State = STATE_READ_ACCEL;
+							HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_SET);	
+							HAL_TIM_Base_Start_IT(&htim3);
+							tapCount = 0;
+							break;
+						case 1:
+							readAudioForOneDone = 0;
+							audioBufferIndex = 0;
+						//flash all the lights to prepare for recording
+							for(int i = 0; i < 3; i++){
+									HAL_GPIO_WritePin(GPIOD, led_pins[0]|led_pins[1]|led_pins[2], GPIO_PIN_SET);
+									HAL_Delay(300);
+									HAL_GPIO_WritePin(GPIOD, led_pins[0]|led_pins[1]|led_pins[2], GPIO_PIN_RESET);
+									HAL_Delay(300);								
+							}
+							HAL_GPIO_WritePin(GPIOD, led_pins[0], GPIO_PIN_SET);						
+							HAL_TIM_Base_Start(&htim2);
+							HAL_ADC_Start_IT(&hadc1);
+							State = STATE_RECORD_AUDIO;
+							tapCount = 0;							
+							break;
+					}
 
-			MyFlag = 0;
-			//Reading the accelerometer status register
-				LIS3DSH_Read (&status, LIS3DSH_STATUS, 1);
-				//The first four bits denote if we have new data on all XYZ axes, 
-		   	//Z axis only, Y axis only or Z axis only. If any or all changed, proceed
-				if ((status & 0x0F) != 0x00)
-				{
-					LIS3DSH_ReadACC(&Buffer[0]);
-					accX = (float)Buffer[0];
-					accY = (float)Buffer[1];
-					accZ = (float)Buffer[2];
-					printf("X: %4f     Y: %4f     Z: %4f \n", accX, accY, accZ);
+				break;
+				case STATE_RECORD_AUDIO:
+				// state 1, 1 tap detected, led green on, record audio, adc stores values in buffer
+				if(readAudioForOneDone){// 1 second  has elapsed	
+					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);					
+					transmitFreakinHugeAudioArray(audioBuffer,AUDIO_BUFFER_SIZE);
+					State = STATE_RECIEVE_RESPONSE;
 				}
-			}
-			
-  }
+				break;
 
-	
-
+				case STATE_READ_ACCEL:
+				if(readAccelForTenDone){
+					counter = 0; //TODO is this necessary?	
+					State = STATE_DETECT_TAP; //return to state detecting tap
+					HAL_GPIO_WritePin(GPIOD, led_pins[1], GPIO_PIN_RESET);// turn off accel read LED
+					transmitFreakinHugeRollAndPitchArrays(storedRoll, storedPitch, ACCELERATION_BUFFER_SIZE);
+				}
+				break;
+		
+				case STATE_RECIEVE_RESPONSE:
+				// wait till integer N arrives from nucleo board
+				// Blink LED2 blue N times
+//				HAL_Delay(32000); //need a long delay, to allow the nucleo to have time to transmit BLE message
+				N = receiveResponseInt();
+				HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
+				for (int i = 0; i < N; i++){
+					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_SET);		
+					HAL_Delay(500);//delay half a second - may need to adjust this
+					HAL_GPIO_WritePin(GPIOD, led_pins[2], GPIO_PIN_RESET);
+					HAL_Delay(500);//delay half a second - may need to adjust this					
+				}
+				counter = 0;
+				State = STATE_DETECT_TAP;
+				break;		
+		}	
+	}
 }
-
 /** System Clock Configuration
 */
 void SystemClock_Config(void)
@@ -116,12 +216,13 @@ void SystemClock_Config(void)
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = 16;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLM = 8;
-  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLN = 168;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 7;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
@@ -155,8 +256,6 @@ void SystemClock_Config(void)
   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
-
-
 /** Configure pins as 
         * Analog 
         * Input 
@@ -179,6 +278,79 @@ void SystemClock_Config(void)
      PB6   ------> I2C1_SCL
      PB9   ------> I2C1_SDA
 */
+
+
+/* ADC1 init function */
+static void MX_ADC1_Init(void)
+{
+
+  ADC_ChannelConfTypeDef sConfig;
+
+    /**Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion) 
+    */
+  hadc1.Instance = ADC1;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ContinuousConvMode = DISABLE;
+  hadc1.Init.DiscontinuousConvMode = DISABLE;
+  hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc1.Init.ExternalTrigConv = ADC_EXTERNALTRIGCONV_T2_TRGO;
+  hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+  hadc1.Init.NbrOfConversion = 1;
+	hadc1.Init.NbrOfDiscConversion = 1;
+  hadc1.Init.DMAContinuousRequests = DISABLE;//
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+  if (HAL_ADC_Init(&hadc1) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+
+    /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
+    */
+  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Rank = 1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+		 _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
+/* TIM2 init function */
+static void MX_TIM2_Init(void)
+{
+
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 263;//TODO CHECK THIS
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 18;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+     _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
+
+
 static void MX_GPIO_Init(void)
 {
 
@@ -225,10 +397,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(PDM_OUT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : B1_Pin */
-  GPIO_InitStruct.Pin = B1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
+  //GPIO_InitStruct.Pin = B1_Pin;
+  //GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  //GPIO_InitStruct.Pull = GPIO_NOPULL;
+  //HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : I2S3_WS_Pin */
   GPIO_InitStruct.Pin = I2S3_WS_Pin;
@@ -316,26 +488,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 
-
-void initializeACC(void){
-	
-	Acc_instance.Axes_Enable				= LIS3DSH_XYZ_ENABLE;
-	Acc_instance.AA_Filter_BW				= LIS3DSH_AA_BW_50;
-	Acc_instance.Full_Scale					= LIS3DSH_FULLSCALE_2;
-	Acc_instance.Power_Mode_Output_DataRate		= LIS3DSH_DATARATE_100;
-	Acc_instance.Self_Test					= LIS3DSH_SELFTEST_NORMAL;
-	Acc_instance.Continous_Update   = LIS3DSH_ContinousUpdate_Disabled;
-	
-	LIS3DSH_Init(&Acc_instance);	
-	
-	/* Enabling interrupt conflicts with push button
-  ACC_Interrupt_Config.Dataready_Interrupt	= LIS3DSH_DATA_READY_INTERRUPT_ENABLED;
-	ACC_Interrupt_Config.Interrupt_signal			= LIS3DSH_ACTIVE_HIGH_INTERRUPT_SIGNAL;
-	ACC_Interrupt_Config.Interrupt_type				= LIS3DSH_INTERRUPT_REQUEST_PULSED;
-	
-	LIS3DSH_DataReadyInterruptConfig(&ACC_Interrupt_Config);
-	*/
-}
 
 /* USER CODE END 4 */
 

@@ -37,8 +37,9 @@
 
 /* USER CODE BEGIN 0 */
 extern uint8_t MyFlag;
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef uart_handle;
 /* USER CODE END 0 */
-
 /* External variables --------------------------------------------------------*/
 
 /******************************************************************************/
@@ -46,7 +47,7 @@ extern uint8_t MyFlag;
 /******************************************************************************/
 
 /**
-* @brief This function handles System tick timer.
+* @brief This function handles System tick timer. Systick ticks every 1ms. need 10000 ticks
 */
 void SysTick_Handler(void)
 {
@@ -56,7 +57,6 @@ void SysTick_Handler(void)
   HAL_IncTick();
   HAL_SYSTICK_IRQHandler();
   /* USER CODE BEGIN SysTick_IRQn 1 */
-	MyFlag ++;
   /* USER CODE END SysTick_IRQn 1 */
 }
 
@@ -66,10 +66,33 @@ void SysTick_Handler(void)
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32f4xx.s).                    */
 /******************************************************************************/
+/**
+* @brief This function handles ADC1, ADC2 and ADC3 global interrupts.
+*/
+void ADC_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC_IRQn 0 */
 
+  /* USER CODE END ADC_IRQn 0 */
+  HAL_ADC_IRQHandler(&hadc1);
+  /* USER CODE BEGIN ADC_IRQn 1 */
+
+  /* USER CODE END ADC_IRQn 1 */
+}
+//void UART_IRQHandler(void)
+//{
+//  HAL_UART_IRQHandler(&uart_handle);
+//}
 
 
 /* USER CODE BEGIN 1 */
+/**
+  * @brief  This function handles TIM3 Handler.
+  */
 
+void EXTI0_IRQHandler(void)
+{
+	HAL_GPIO_EXTI_IRQHandler(B1_Pin);
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
