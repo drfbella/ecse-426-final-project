@@ -7,11 +7,11 @@ public class BTLE_Device {
     private BluetoothDevice bluetoothDevice;
     private int rssi;
 
-    public BTLE_Device(BluetoothDevice bluetoothDevice) {
+    BTLE_Device(BluetoothDevice bluetoothDevice) {
         this.bluetoothDevice = bluetoothDevice;
     }
 
-    public String getAddress() {
+    String getAddress() {
         return bluetoothDevice.getAddress();
     }
 
@@ -19,11 +19,11 @@ public class BTLE_Device {
         return bluetoothDevice.getName();
     }
 
-    public void setRSSI(int rssi) {
+    void setRSSI(int rssi) {
         this.rssi = rssi;
     }
 
-    public int getRSSI() {
+    int getRSSI() {
         return rssi;
     }
 }

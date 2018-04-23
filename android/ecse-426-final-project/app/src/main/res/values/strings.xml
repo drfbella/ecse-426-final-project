@@ -24,4 +24,7 @@
     <string name="speech_button">Speech</string>
     <string name="transcription_error">[Unable to transcribe number.]</string>
     <string name="firebase">Firebase</string>
+    <string name="transcription_failed">[Transcription failed]</string>
+    <string name="no_address">No Address</string>
+    <string name="blank_value">Value: ---</string>
 </resources>

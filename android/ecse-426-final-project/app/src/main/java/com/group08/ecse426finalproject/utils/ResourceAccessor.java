@@ -16,10 +16,15 @@ public class ResourceAccessor {
     }
 
     public String readRawResourceString(int id) {
-        return new String(readRawResourceBytes(id));
+        byte[] bytes = readRawResourceBytes(id);
+        if (bytes == null) {
+            return "";
+        } else {
+            return new String(bytes);
+        }
     }
 
-    public byte[] readRawResourceBytes(int id) {
+    private byte[] readRawResourceBytes(int id) {
         try {
             InputStream in_s = context.getResources().openRawResource(id);
 

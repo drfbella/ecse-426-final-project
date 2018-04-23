@@ -39,7 +39,6 @@ import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 
 public class AccelerometerActivity extends AppCompatActivity {
     private static final String TAG = "AccelerometerActivity";
-    private static final int NUM_SAMPLES = 1000 + 1; // 10 seconds at 100 Hz
     private static final String PLOTLY_GRIDS_URL = "https://api.plot.ly/v2/grids";
     private static final String PLOTLY_PLOTS_URL = "https://api.plot.ly/v2/plots";
     private ResourceAccessor resourceAccessor;
@@ -48,7 +47,6 @@ public class AccelerometerActivity extends AppCompatActivity {
     private ProgressBar pitchProgressBar;
     private ProgressBar rollProgressBar;
     private ByteManipulator byteManipulator;
-    private ChartCreator chartCreator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,16 +55,13 @@ public class AccelerometerActivity extends AppCompatActivity {
 
         resourceAccessor = new ResourceAccessor(this);
         byteManipulator = new ByteManipulator();
-        chartCreator = new ChartCreator();
+        ChartCreator chartCreator = new ChartCreator();
 
         byte[] pitchData = getIntent().getByteArrayExtra(PITCH_DATA_NAME);
         byte[] rollData = getIntent().getByteArrayExtra(ROLL_DATA_NAME);
 
         Log.d(TAG, "Received pitch data: " + Arrays.toString(pitchData));
         Log.d(TAG, "Received roll data: " + Arrays.toString(rollData));
-
-//        pitchData = randomData(NUM_SAMPLES);
-//        rollData = randomData(NUM_SAMPLES);
 
         textPlotlyPitchLink = findViewById(R.id.text_pitch_plotly_link);
         textPlotlyRollLink = findViewById(R.id.text_roll_plotly_link);

@@ -8,9 +8,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,7 +29,7 @@ import static com.group08.ecse426finalproject.utils.Constants.ROLL_DATA_NAME;
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
 @TargetApi(18) //18 needed for BT manager
-public class BluetoothActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener{
+public class BluetoothActivity extends AppCompatActivity implements View.OnClickListener, AdapterView.OnItemClickListener {
 
     private final static String TAG = BluetoothActivity.class.getSimpleName();
 
@@ -39,16 +38,17 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
     public final static int BTLE_SERVICES = 2;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 456;
 
+    private final static long SCAN_PERIOD = 7500; // scanning period in ms
+    private final static int SIGNAL_STRENGTH = -75; // signal strength, may need to modify
+    // if signal strength is low and not recognizable
+
     private HashMap<String, BTLE_Device> mBTDevicesHashMap;
     private ArrayList<BTLE_Device> mBTLEDeviceArrayList;
     private ListAdapter_BTLE_Devices adapter;
 
-    private long scanPeriod = 7500; // scanning period in ms
-    private int signalStrength = -75; // signal strength, may need to modify
-                                      // if signal strength is low and not recognizable
-
-    BluetoothAdapter mBluetoothAdapter;
-
+    private byte[] pitchData = new byte[]{};
+    private byte[] rollData = new byte[]{};
+    private byte[] speechData = new byte[]{};
     private Button scanButton;
 
     private BroadcastReceiver_BTState mBTStateUpdateReceiver;
@@ -65,7 +65,7 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
 
         // create ble device mapping
         mBTStateUpdateReceiver = new BroadcastReceiver_BTState(getApplicationContext());
-        mBTLeScanner = new Scanner_BTLE(this, scanPeriod, signalStrength);
+        mBTLeScanner = new Scanner_BTLE(this, SCAN_PERIOD, SIGNAL_STRENGTH);
         mBTDevicesHashMap = new HashMap<>();
         mBTLEDeviceArrayList = new ArrayList<>();
 
@@ -135,9 +135,6 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
 
         stopScan();
 
-        /**
-         * prepare bundle for new BTLE services Activity
-         */
         String name = mBTLEDeviceArrayList.get(position).getName();
         String address = mBTLEDeviceArrayList.get(position).getAddress();
 
@@ -211,83 +208,11 @@ public class BluetoothActivity extends AppCompatActivity implements View.OnClick
      *     Availability: https://github.com/googlesamples/android-BluetoothLeGatt/issues/38
      *     date accessed: 03-30-2018
      */
-
-
     public void requestLocation() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
         }
     }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSION_REQUEST_COARSE_LOCATION: {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission granted, yay! Start the Bluetooth device scan.
-                } else {
-                    // Alert the user that this application requires the location permission to perform the scan.
-                }
-            }
-        }
-    }
-
-//    private BluetoothGatt mGatt;
-//
-//    /**
-//     * Inspiration from PART 2 of BLE Tutorial McGill PDF slides
-//     */
-//
-//
-//    /**
-//     * Connection established, pass address to get device Gatt
-//     * @param address of the selected device in the list
-//     */
-//
-//    private void connectDevice(String address){
-//        mBluetoothAdapter = mBTLeScanner.getBluetoothAdapter(); //obtain adapter from BTLeScanner
-//
-//        if(!mBluetoothAdapter.isEnabled()){
-//            BluetoothUtils.showToast(getApplicationContext(), "Bluetooth is disabled...");
-//            finish();
-//        }
-//        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-//        mGatt = device.connectGatt(getApplicationContext(), false, mCallback);
-//        Log.d("BLE", "connectDevice");
-//        BluetoothUtils.showToast(getApplicationContext(), "Selected device is " + mGatt.getDevice().getAddress());
-//    }
-//    private BluetoothGattCallback mCallback = new BluetoothGattCallback() {
-//        @Override
-//        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-//            super.onConnectionStateChange(gatt, status, newState);
-//            switch(newState){
-//                case BluetoothGatt.STATE_CONNECTED:
-//                    //when connected, check services
-//                    mGatt.discoverServices(); // Checks the services or characteristics on the device
-//                    Log.d(TAG, "onConnectionStateChange");
-//                    break;
-//            }
-//        }
-//
-//        /**
-//         * called when services are discovered when connecting to a device
-//         * @param gatt
-//         * @param status
-//         */
-//        @Override
-//        public void onServicesDiscovered(BluetoothGatt gatt, int status){
-//            super.onServicesDiscovered(gatt, status);
-//        }
-//    };
-
-
-    /**
-     *  Sean imports
-     */
-    private byte[] pitchData = new byte[]{};
-    private byte[] rollData = new byte[]{};
-    private byte[] speechData = new byte[]{};
-
 
     @Override
     public void onBackPressed() {

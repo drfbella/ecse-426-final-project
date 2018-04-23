@@ -33,8 +33,8 @@ public class SpeechService {
         sendGoogleSpeechTranscriptionRequest(audio_base64, speechResponseHandler);
     }
 
-    public void sendGoogleSpeechTranscriptionRequest(String audio_base64,
-                                                     final SpeechResponseHandler speechResponseHandler) {
+    private void sendGoogleSpeechTranscriptionRequest(String audio_base64,
+                                                      final SpeechResponseHandler speechResponseHandler) {
         RequestQueue queue = Volley.newRequestQueue(context);
         JSONObject jsonRequest = new JSONObject();
         try {

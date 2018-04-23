@@ -13,12 +13,7 @@ public class BluetoothUtils {
     public static boolean checkBluetooth(BluetoothAdapter bluetoothAdapter) {
         // Ensures Bluetooth is available on the device and it is enabled. If not,
         // displays a dialog requesting user permission to enable Bluetooth.
-        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled()) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return !(bluetoothAdapter == null || !bluetoothAdapter.isEnabled());
     }
 
     // request to turn on bt by prompting user to change in settings

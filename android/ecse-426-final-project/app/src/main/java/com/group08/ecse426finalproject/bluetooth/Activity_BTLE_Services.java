@@ -25,8 +25,6 @@ import com.group08.ecse426finalproject.speech.SpeechService;
 import com.group08.ecse426finalproject.utils.BluetoothUtils;
 import com.group08.ecse426finalproject.utils.ToastShower;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,28 +59,20 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 
     // listView for services
     private ListAdapter_BTLE_Services expandableListAdapter;
-    private ExpandableListView expandableListView;
 
     // mapping all available services
     private ArrayList<BluetoothGattService> services_ArrayList;
-    private HashMap<String, BluetoothGattCharacteristic> characteristics_HashMap;
     private HashMap<String, ArrayList<BluetoothGattCharacteristic>> characteristics_HashMapList;
 
     private Intent mBTLE_Service_Intent;
     private Service_BTLE_GATT mBTLE_Service;
-    private boolean mBTLE_Service_Bound;
     private BroadcastReceiver_BTLE_GATT mGattUpdateReceiver;
     private SpeechService speechService;
     private FirebaseService firebaseService;
 
-    private String name;
     private String address;
 
     private Button buttonStoreValues;
-    private Button buttonSpeech;
-    private Button buttonPitchRoll;
-    private Button buttonClearSpeech;
-    private Button buttonClearPitchRoll;
 
     private TextView textSpeechTranscript;
     private TextView textSpeechFirebaseLink;
@@ -96,7 +86,6 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             Service_BTLE_GATT.BTLeServiceBinder binder = (Service_BTLE_GATT.BTLeServiceBinder) service;
             mBTLE_Service = binder.getService();
-            mBTLE_Service_Bound = true;
 
             if (!mBTLE_Service.initialize()) {
                 Log.e(TAG, "Unable to initialize Bluetooth");
@@ -108,7 +97,6 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             mBTLE_Service = null;
-            mBTLE_Service_Bound = false;
         }
     };
 
@@ -121,13 +109,12 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
 
         // retrieve name and address of device
         Intent intent = getIntent();
-        name = intent.getStringExtra(Activity_BTLE_Services.EXTRA_NAME);
+        String name = intent.getStringExtra(Activity_BTLE_Services.EXTRA_NAME);
         address = intent.getStringExtra(Activity_BTLE_Services.EXTRA_ADDRESS);
 
         // map services and characteristics
         // characteristics will be displayed
         services_ArrayList = new ArrayList<>();
-        characteristics_HashMap = new HashMap<>();
         characteristics_HashMapList = new HashMap<>();
 
         speechService = new SpeechService(this);
@@ -148,7 +135,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             }
         });
 
-        buttonSpeech = findViewById(R.id.button_speech);
+        Button buttonSpeech = findViewById(R.id.button_speech);
         buttonSpeech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,7 +143,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             }
         });
 
-        buttonPitchRoll = findViewById(R.id.button_pitch_roll);
+        Button buttonPitchRoll = findViewById(R.id.button_pitch_roll);
         buttonPitchRoll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -164,7 +151,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             }
         });
 
-        buttonClearSpeech = findViewById(R.id.button_clear_speech);
+        Button buttonClearSpeech = findViewById(R.id.button_clear_speech);
         buttonClearSpeech.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -175,7 +162,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
             }
         });
 
-        buttonClearPitchRoll = findViewById(R.id.button_clear_pitch_roll);
+        Button buttonClearPitchRoll = findViewById(R.id.button_clear_pitch_roll);
         buttonClearPitchRoll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -189,11 +176,11 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         expandableListAdapter = new ListAdapter_BTLE_Services(
                 this, services_ArrayList, characteristics_HashMapList);
 
-        expandableListView = findViewById(R.id.lv_expandable);
+        ExpandableListView expandableListView = findViewById(R.id.lv_expandable);
         expandableListView.setAdapter(expandableListAdapter);
         expandableListView.setOnChildClickListener(this);
 
-        ((TextView) findViewById(R.id.tv_name)).setText(name + " Services");
+        ((TextView) findViewById(R.id.tv_name)).setText(String.format("%s %s", name, "Services"));
         ((TextView) findViewById(R.id.tv_address)).setText(address);
     }
 
@@ -314,7 +301,6 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
         if (mBTLE_Service != null) {
 
             services_ArrayList.clear();
-            characteristics_HashMap.clear();
             characteristics_HashMapList.clear();
 
             List<BluetoothGattService> servicesList = mBTLE_Service.getSupportedGattServices();
@@ -326,10 +312,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                 List<BluetoothGattCharacteristic> characteristicsList = service.getCharacteristics();
                 ArrayList<BluetoothGattCharacteristic> newCharacteristicsList = new ArrayList<>();
 
-                for (BluetoothGattCharacteristic characteristic: characteristicsList) {
-                    characteristics_HashMap.put(characteristic.getUuid().toString(), characteristic);
-                    newCharacteristicsList.add(characteristic);
-                }
+                newCharacteristicsList.addAll(characteristicsList);
 
                 characteristics_HashMapList.put(service.getUuid().toString(), newCharacteristicsList);
             }
@@ -422,7 +405,7 @@ public class Activity_BTLE_Services extends AppCompatActivity implements Expanda
                         @Override
                         public void handleSpeechErrorResponse() {
                             textSpeechTranscript.setVisibility(View.VISIBLE);
-                            textSpeechTranscript.setText("[Transcription failed]");
+                            textSpeechTranscript.setText(R.string.transcription_failed);
                             ToastShower.showToast(Activity_BTLE_Services.this, "Unable to transcribe audio as number.");
                         }
                     });

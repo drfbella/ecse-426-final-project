@@ -7,42 +7,28 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.ScatterChart;
 import com.group08.ecse426finalproject.R;
 import com.group08.ecse426finalproject.firebase.FirebaseService;
-import com.group08.ecse426finalproject.utils.ByteManipulator;
-import com.group08.ecse426finalproject.utils.ChartCreator;
 
 import static com.group08.ecse426finalproject.utils.Constants.SPEECH_DATA_NAME;
 
 public class SpeechActivity extends AppCompatActivity {
-    private static final String TAG = "SpeechActivity";
-    private FirebaseService firebaseService;
-    private ByteManipulator byteManipulator;
-    private ChartCreator chartCreator;
-    private SpeechService speechService;
-
     private TextView textTranscript;
-    private TextView textFirebaseLink;
     private ProgressBar progressBar;
-    private ScatterChart audioChart;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_speech);
 
-        firebaseService = new FirebaseService();
-        byteManipulator = new ByteManipulator();
-        chartCreator = new ChartCreator();
-        speechService = new SpeechService(this);
+        FirebaseService firebaseService = new FirebaseService();
+        SpeechService speechService = new SpeechService(this);
 
         textTranscript = findViewById(R.id.text_transcript);
-        textFirebaseLink = findViewById(R.id.text_firebase_link);
+        TextView textFirebaseLink = findViewById(R.id.text_firebase_link);
         progressBar = findViewById(R.id.progress_bar);
 
         byte[] speechData = getIntent().getByteArrayExtra(SPEECH_DATA_NAME);
-//        byte[] speechData = resourceAccessor.readRawResourceBytes(R.raw.audio);
 
         firebaseService.uploadBytesUnique(speechData, "audio/","raw", textFirebaseLink);
 
@@ -61,6 +47,5 @@ public class SpeechActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
             }
         });
-//        sendDemoRequestBytes();
     }
 }

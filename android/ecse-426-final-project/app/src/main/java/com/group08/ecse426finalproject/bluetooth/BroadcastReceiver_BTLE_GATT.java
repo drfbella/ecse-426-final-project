@@ -14,8 +14,6 @@ import java.util.UUID;
 public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
     private static final String TAG = "BroadcastReceiver";
 
-    private boolean mConnected = false;
-
     private Activity_BTLE_Services activity;
     private ByteManipulator byteManipulator;
 
@@ -35,11 +33,7 @@ public class BroadcastReceiver_BTLE_GATT extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
 
-        if (Service_BTLE_GATT.ACTION_GATT_CONNECTED.equals(action)) {
-            mConnected = true;
-        }
-        else if (Service_BTLE_GATT.ACTION_GATT_DISCONNECTED.equals(action)) {
-            mConnected = false;
+        if (Service_BTLE_GATT.ACTION_GATT_DISCONNECTED.equals(action)) {
             ToastShower.showToast(activity.getApplicationContext(), "Disconnected From Device");
             activity.finish();
         }
