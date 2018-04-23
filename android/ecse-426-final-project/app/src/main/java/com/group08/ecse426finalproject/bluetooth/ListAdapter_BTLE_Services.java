@@ -25,8 +25,8 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
     private ArrayList<BluetoothGattService> services_ArrayList;
     private HashMap<String, ArrayList<BluetoothGattCharacteristic>> characteristics_HashMap;
 
-    public ListAdapter_BTLE_Services(Activity activity, ArrayList<BluetoothGattService> listDataHeader,
-                                 HashMap<String, ArrayList<BluetoothGattCharacteristic>> listChildData) {
+    ListAdapter_BTLE_Services(Activity activity, ArrayList<BluetoothGattService> listDataHeader,
+                              HashMap<String, ArrayList<BluetoothGattCharacteristic>> listChildData) {
 
         this.activity = activity;
         this.services_ArrayList = listDataHeader;
@@ -84,7 +84,7 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
         }
 
         TextView tv_service = (TextView) convertView.findViewById(R.id.tv_service_uuid);
-        tv_service.setText("S: " + serviceUUID);
+        tv_service.setText(String.format("S: %s", serviceUUID));
 
         return convertView;
     }
@@ -101,12 +101,12 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
             convertView = inflater.inflate(R.layout.btle_characteristics_list_item, null);
         }
 
-        TextView tv_service = (TextView) convertView.findViewById(R.id.tv_characteristic_uuid);
-        tv_service.setText("C: " + characteristicUUID);
+        TextView tv_service = convertView.findViewById(R.id.tv_characteristic_uuid);
+        tv_service.setText(String.format("C: %s", characteristicUUID));
 
         int properties = bluetoothGattCharacteristic.getProperties();
 
-        TextView tv_property = (TextView) convertView.findViewById(R.id.tv_properties);
+        TextView tv_property = convertView.findViewById(R.id.tv_properties);
         StringBuilder sb = new StringBuilder();
 
         if (BluetoothUtils.hasReadProperty(properties) != 0) {
@@ -123,14 +123,14 @@ public class ListAdapter_BTLE_Services extends BaseExpandableListAdapter {
 
         tv_property.setText(sb.toString());
 
-        TextView tv_value = (TextView) convertView.findViewById(R.id.tv_value);
+        TextView tv_value = convertView.findViewById(R.id.tv_value);
 
         byte[] data = bluetoothGattCharacteristic.getValue();
         if (data != null) {
-            tv_value.setText("Value: " + ByteManipulator.hexToString(data));
+            tv_value.setText(String.format("Value: %s", ByteManipulator.hexToString(data)));
         }
         else {
-            tv_value.setText("Value: ---");
+            tv_value.setText(R.string.blank_value);
         }
 
         return convertView;
